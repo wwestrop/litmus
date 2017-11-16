@@ -1,0 +1,90 @@
+html {
+  box-sizing: border-box; }
+
+* {
+  box-sizing: inherit; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #666794;
+  font-family: 'Noto Sans', 'Lucida Sans', Helvetica, 'Microsoft Sans Serif', Arial, sans-serif;
+  font-size: 11pt;
+  overflow: hidden; }
+
+x-shell {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: #666794;
+  position: relative;
+  display: block; }
+
+x-toolbar {
+  height: 80px;
+  width: 100%;
+  background-color: #45D399;
+  display: block; }
+
+x-statusbar {
+  height: 26px;
+  width: 100%;
+  background-color: #4545D3;
+  color: #FFF;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 3px 2px 3px 2px;
+  display: block;
+  box-sizing: border-box; }
+
+x-resultsPanel {
+  position: absolute;
+  left: 0;
+  top: 80px;
+  height: calc(100vh - 80px - 26px);
+  width: 65%;
+  background-color: cadetblue;
+  display: block;
+  overflow-y: auto; }
+
+x-summaryPanel {
+  position: absolute;
+  right: 0;
+  top: 80px;
+  height: calc(100vh - 80px - 26px);
+  width: 35%;
+  background-color: gold;
+  display: block;
+  overflow-y: auto; }
+
+x-badge {
+  border-radius: 6px;
+  padding: 0 5px 0 5px;
+  background-color: #45D399; }
+  x-badge.pass {
+    background-color: forestgreen; }
+  x-badge.fail {
+    background-color: red; }
+
+x-filterBar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 30px;
+  width: 100%;
+  background-color: crimson;
+  display: block; }
+
+x-resultsTree {
+  position: absolute;
+  left: 0;
+  top: 30px;
+  height: calc(100% - 30px);
+  width: 100%;
+  background-color: pink;
+  display: block;
+  overflow-y: scroll; }
+
+/*# sourceMappingURL=shell.css.map */

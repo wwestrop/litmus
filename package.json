@@ -1,0 +1,27 @@
+{
+  "name": "litmus",
+  "version": "0.0.1",
+  "description": "Litmus visual test runner for Javascript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "litmus",
+    "test",
+    "unit",
+    "testing",
+    "mocha",
+    "jasmine",
+    "chai",
+    "js",
+    "javascript",
+    "mock",
+    "spy"
+  ],
+  "author": "Will Westrop",
+  "license": "MIT",
+  "devDependencies": {
+    "sass": "^1.0.0-beta.3"
+  }
+}

@@ -1,0 +1,63 @@
+<html>
+<head>
+	<link rel="stylesheet" href="css/shell.css" />
+	<link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+</head>
+
+<body>
+
+	<x-shell>
+		<x-toolbar>
+			<button>Open&hellip;</button>
+			<button disabled>Run selected</button>
+			<button disabled>Run all</button>
+			<button disabled>Stop</button>
+			<!--<button disabled>Debug</button>-->
+			<button>Watch sources</button>
+			<button>Export/Produce report</button>
+			<button>Preferences</button>
+		</x-toolbar>
+
+		<x-resultsPanel>
+			<x-filterBar>
+				Show only: <button>Passed</button><button>Failed</button><button>Inconclusive</button>
+				&nbsp;&nbsp;&nbsp;
+				Group by: <select>
+					<option value=""></option>
+					<option value="Test outcome">Test outcome</option>
+					<option value="Execution time">Execution time</option>
+					<option value="Class/Namespace">Class/Namespace</option>
+				</select>
+				&nbsp;&nbsp;&nbsp;
+				<input type="search" />
+			</x-filterBar>
+			<x-resultsTree>
+				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
+				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
+				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
+				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
+				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
+			</x-resultsTree>
+		</x-resultsPanel>
+
+		<x-summaryPanel>
+			<h1>Summary</h1>
+			<h2>No tests run</h2>
+			<h2>Overall result: passed</h2>
+
+			<h1>Performance</h1>
+			<h2>14.7 seconds</h2>
+			<h2>Average: 14.5 seconds</h2>
+			<h2>(up 5% from last run)</h2>
+
+			<h1>Coverage</h1>
+			<h2>Not available</h2>
+			<h2>+ 1.97%</h2>
+			<h2>Classes: 88%, Methods: 75%, Branches: 62%</h2>
+		</x-summaryPanel>
+		<x-statusbar>&nbsp; Status: Ready | Tests: <x-badge class="pass">54</x-badge> passed, <x-badge class="fail">2</x-badge> failed | Testing in progress: <x-progressbar></x-progressbar></x-statusbar>
+	</x-shell>
+
+</body>
+
+</html>

@@ -1,0 +1,117 @@
+﻿$textColour: #FFF;
+
+$brandColour: #45D399;
+$accentColour: #4545D3;
+$panelColour: #4A4D66;
+$backgroundColour: #666794;
+
+$toolbarHeight: 80px;
+$statusbarHeight: 26px;
+
+$filterBarHeight: 30px;
+
+html {
+	box-sizing: border-box;
+}
+
+* {
+	box-sizing: inherit;
+}
+
+body {	
+	margin: 0;
+	padding: 0;
+	background-color: $backgroundColour;
+	font-family: 'Noto Sans', 'Lucida Sans', Helvetica, 'Microsoft Sans Serif', Arial, sans-serif;
+	font-size: 11pt;
+	// box-sizing: content-box;
+	overflow: hidden;
+}
+
+// todo - is shell necessary? seems to serve same purpose as body element
+x-shell {
+	width: 100vw;
+	height: 100vh;
+	margin: 0;
+	padding: 0;
+	background-color: $backgroundColour;
+	position: relative;
+	display: block;
+}
+
+x-toolbar {
+	height: $toolbarHeight;
+	width: 100%;
+	background-color: $brandColour;
+	display: block;
+}
+
+x-statusbar {
+	height: $statusbarHeight;
+	width: 100%;
+	background-color: $accentColour;
+	color: $textColour;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	padding: 3px 2px 3px 2px;
+	display: block;
+	box-sizing: border-box;
+}
+
+x-resultsPanel {
+	position: absolute;
+	left: 0;
+	top: $toolbarHeight;
+	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight});
+	width: 65%;
+	background-color: cadetblue;
+	display: block;
+	overflow-y: auto;
+}
+
+x-summaryPanel {
+	position: absolute;
+	right: 0;
+	top: $toolbarHeight;
+	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight});
+	width: 35%;
+	background-color: gold;
+	display: block;
+	overflow-y: auto;
+}
+
+x-badge {
+	border-radius: 6px;
+	padding: 0 5px 0 5px;
+	background-color: $brandColour;
+
+	&.pass {
+		background-color: forestgreen;
+	}
+
+	&.fail {
+		background-color: red;
+	}
+}
+
+x-filterBar {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: $filterBarHeight;
+	width: 100%;
+	background-color: crimson;
+	display: block;
+}
+
+x-resultsTree {
+	position: absolute;
+	left: 0;
+	top: $filterBarHeight;
+	height: calc(100% - #{$filterBarHeight});
+	width: 100%;
+	background-color: pink;
+	display: block;
+	overflow-y: scroll;
+}
