@@ -6,6 +6,10 @@
 
 <body>
 
+	<!--<throbber-shell0></throbber-shell0>-->
+	<throbber-shell1></throbber-shell1>
+	<throbber-shell2></throbber-shell2>
+
 	<x-shell>
 		<x-toolbar>
 			<button>Open&hellip;</button>
@@ -32,7 +36,7 @@
 				<input type="search" />
 			</x-filterBar>
 			<x-resultsTree>
-				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
+				<p>dummy</p><p>dummy</p><p style="color: red">dummy: <br/>expected {} to be an instance of ParameterContext</p><p>dummy</p><p>dummy</p><p>dummy</p>
 				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
 				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
 				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
@@ -43,7 +47,7 @@
 		<x-summaryPanel>
 			<h1>Summary</h1>
 			<h2>No tests run</h2>
-			<h2>Overall result: passed</h2>
+			<h2>Overall result: <x-badge class="pass">passed</x-badge></h2>
 
 			<h1>Performance</h1>
 			<h2>14.7 seconds</h2>
