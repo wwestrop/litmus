@@ -76,7 +76,7 @@ x-shell {
 x-toolbar {
   height: 70px;
   width: 100%;
-  background-image: linear-gradient(to bottom, #4A4D66 0%, #4A4D66 93%, rgba(41, 41, 44, 0.8) 93%, #4545D3 100%);
+  background-image: linear-gradient(to bottom, #4A4D66 0px, #4A4D66 calc(70px - 5px), #2f2f4d calc(70px - 5px), #4545D3 100%);
   display: block;
   z-index: 1000; }
   x-toolbar x-tabGroup {
@@ -92,7 +92,7 @@ x-toolbar {
       display: inline-block;
       padding: 4px 30px 4px 30px;
       height: 60px;
-      background-image: linear-gradient(to bottom, gray 0%, gray 92%, rgba(41, 41, 44, 0.8) 92%, #4545D3 100%);
+      background-image: linear-gradient(to bottom, gray 0%, gray 92%, #2f2f4d 92%, #4545D3 100%);
       border-top-left-radius: 6px;
       border-top-right-radius: 6px;
       border-top: 2px solid #3C3E50;

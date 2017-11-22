@@ -16,6 +16,7 @@ $textOnPanelColour: #2B2D3B;
 $textOnBackgroundColour: #ACB2D0;
 
 $shadowColour: #29292c;
+$toolbarShadowHeight: 5px;
 
 $tabHeight: 60px;
 
@@ -121,9 +122,8 @@ x-shell {
 x-toolbar {
 	height: $toolbarHeight;
 	width: 100%;
-	//background-color: $toolbarColour;
-	//background-image: linear-gradient(to bottom, $toolbarColour 0%, $toolbarColour /*todo blend this with the shadow colour*/ 90%, $shadowColour: 95%, $accentColour 100%);
-	background-image: linear-gradient(to bottom, $toolbarColour 0%, $toolbarColour 93%, rgba($shadowColour, 0.8) 93%, $accentColour 100%);
+	//background-image: linear-gradient(to bottom, $toolbarColour 0%, $toolbarColour /*todo blend this with the shadow colour*/ 93%, mix($shadowColour, $accentColour, 80%) 93%, $accentColour 100%);
+	background-image: linear-gradient(to bottom, $toolbarColour 0px, $toolbarColour calc(#{$toolbarHeight} - #{$toolbarShadowHeight}), mix($shadowColour, $accentColour, 80%) calc(#{$toolbarHeight} - #{$toolbarShadowHeight}), $accentColour 100%);
 	display: block;
 	z-index: 1000;
 
@@ -143,7 +143,8 @@ x-toolbar {
 			display: inline-block;
 			padding: 4px 30px 4px 30px;
 			height: $tabHeight;
-			background-image: linear-gradient(to bottom, gray 0%, gray 92%, rgba($shadowColour, 0.8) 92%, $accentColour 100%);
+			background-image: linear-gradient(to bottom, gray 0%, gray 92%, mix($shadowColour, $accentColour, 80%) 92%, $accentColour 100%);
+			//background-image: linear-gradient(to bottom, gray 0px, gray 54px, mix($shadowColour, $accentColour, 80%) 54px, $accentColour 100%);
 			border-top-left-radius: 6px;
 			border-top-right-radius: 6px;
 			border-top: 2px solid #3C3E50;
