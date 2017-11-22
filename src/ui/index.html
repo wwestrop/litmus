@@ -6,37 +6,46 @@
 
 <body>
 
+
+
 	<!--<throbber-shell0></throbber-shell0>-->
-	<throbber-shell1></throbber-shell1>
-	<throbber-shell2></throbber-shell2>
+	<!--<throbber-shell1></throbber-shell1>
+	<throbber-shell2></throbber-shell2>-->
 
 	<x-shell>
 		<x-toolbar>
-			<button>Open&hellip;</button>
+			<!--<button>Open&hellip;</button>
 			<button disabled>Run selected</button>
 			<button disabled>Run all</button>
 			<button disabled>Stop</button>
-			<!--<button disabled>Debug</button>-->
 			<button>Watch sources</button>
 			<button>Export/Produce report</button>
-			<button>Preferences</button>
+			<button>Preferences</button>-->
+
+			<!--<x-buttonGroup></x-buttonGroup>-->
+			<!--<div class="statusDisplay"></div>-->
+
+			<x-tabGroup class="right">
+				<x-tab class="active"tooltip="Guten tag">Results</x-tab><x-tab tooltip="Hello world">Coverage</x-tab>
+			</x-tabGroup>
 		</x-toolbar>
 
+		<x-filterBar>
+			<!--Show only: <button>Passed</button><button>Failed</button><button>Inconclusive</button>
+			&nbsp;&nbsp;&nbsp;
+			Group by: <select>
+				<option value=""></option>
+				<option value="Test outcome">Test outcome</option>
+				<option value="Execution time">Execution time</option>
+				<option value="Class/Namespace">Class/Namespace</option>
+			</select>
+			&nbsp;&nbsp;&nbsp;
+			<input type="search" />-->
+		</x-filterBar>
+
 		<x-resultsPanel>
-			<x-filterBar>
-				Show only: <button>Passed</button><button>Failed</button><button>Inconclusive</button>
-				&nbsp;&nbsp;&nbsp;
-				Group by: <select>
-					<option value=""></option>
-					<option value="Test outcome">Test outcome</option>
-					<option value="Execution time">Execution time</option>
-					<option value="Class/Namespace">Class/Namespace</option>
-				</select>
-				&nbsp;&nbsp;&nbsp;
-				<input type="search" />
-			</x-filterBar>
 			<x-resultsTree>
-				<p>dummy</p><p>dummy</p><p style="color: red">dummy: <br/>expected {} to be an instance of ParameterContext</p><p>dummy</p><p>dummy</p><p>dummy</p>
+				<p>dummy 1</p><p>dummy 2</p><p style="color: #FE4E4E">dummy 3: <br/>expected {} to be an instance of ParameterContext</p><p>dummy 4</p><p>dummy 5</p><p>dummy 6</p> <!-- TODO red failures indistinct against the background -->
 				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
 				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
 				<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
@@ -59,7 +68,7 @@
 			<h2>+ 1.97%</h2>
 			<h2>Classes: 88%, Methods: 75%, Branches: 62%</h2>
 		</x-summaryPanel>
-		<x-statusbar>&nbsp; Status: Ready | Tests: <x-badge class="pass">54</x-badge> passed, <x-badge class="fail">2</x-badge> failed | Testing in progress: <x-progressbar></x-progressbar></x-statusbar>
+		<!--<x-statusbar>&nbsp; Status: Ready | Tests: <x-badge class="pass">54</x-badge> passed, <x-badge class="fail">2</x-badge> failed | Testing in progress: <x-progressbar></x-progressbar></x-statusbar>-->
 	</x-shell>
 
 </body>

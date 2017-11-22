@@ -2,13 +2,22 @@
 
 $brandColour: #45D399;
 $accentColour: #4545D3;
-$panelColour: #4A4D66;
-$backgroundColour: #666794;
+$panelColour: #6F719D;
+$backgroundColour: #515379;
+$toolbarColour: #4A4D66;
 
-$toolbarHeight: 80px;
-$statusbarHeight: 26px;
+$toolbarHeight: 70px;
+// $statusbarHeight: 26px;
+$statusbarHeight: 0px;
 
-$filterBarHeight: 30px;
+$filterBarHeight: 36px;
+
+$textOnPanelColour: #2B2D3B;
+$textOnBackgroundColour: #ACB2D0;
+
+$shadowColour: #29292c;
+
+$tabHeight: 60px;
 
 
 html {
@@ -17,7 +26,20 @@ html {
 
 * {
 	box-sizing: inherit;
+	cursor: default;
+	user-select: none;
 }
+
+a {
+	cursor: pointer;
+}
+
+
+
+@mixin insetShadow {
+	box-shadow: rgba($shadowColour, 0.8) 0 4px 2px -2px inset;
+}
+
 
 
 /*throbber-shell0 {
@@ -99,11 +121,51 @@ x-shell {
 x-toolbar {
 	height: $toolbarHeight;
 	width: 100%;
-	background-color: $brandColour;
+	//background-color: $toolbarColour;
+	//background-image: linear-gradient(to bottom, $toolbarColour 0%, $toolbarColour /*todo blend this with the shadow colour*/ 90%, $shadowColour: 95%, $accentColour 100%);
+	background-image: linear-gradient(to bottom, $toolbarColour 0%, $toolbarColour 93%, rgba($shadowColour, 0.8) 93%, $accentColour 100%);
 	display: block;
+	z-index: 1000;
+
+	x-tabGroup {
+		height: $tabHeight;
+		display: block;
+		position: absolute;
+		top: calc(#{$toolbarHeight} - #{$tabHeight});
+		color: white;
+		font-size: 14pt;
+
+		&.right {
+			right: 60px;
+		}
+
+		x-tab {
+			display: inline-block;
+			padding: 4px 30px 4px 30px;
+			height: $tabHeight;
+			background-image: linear-gradient(to bottom, gray 0%, gray 92%, rgba($shadowColour, 0.8) 92%, $accentColour 100%);
+			border-top-left-radius: 6px;
+			border-top-right-radius: 6px;
+			border-top: 2px solid #3C3E50;
+			border-right: 2px solid #3C3E50;
+			border-left: 2px solid #3C3E50;
+			margin-left: -2px;
+			margin-right: -2px;
+
+			&.active {
+				background-image: none;
+				background-color: $accentColour;
+				border-top: 2px solid #35378B;
+				border-right: 2px solid #35378B;
+				border-left: 2px solid #35378B;
+				margin-left: 0;
+				margin-right: 0;
+			}
+		}
+	}
 }
 
-x-statusbar {
+/*x-statusbar {
 	height: $statusbarHeight;
 	width: 100%;
 	background-color: $accentColour;
@@ -114,28 +176,35 @@ x-statusbar {
 	padding: 3px 2px 3px 2px;
 	display: block;
 	box-sizing: border-box;
-}
+}*/
 
 x-resultsPanel {
+	@include insetShadow;
 	position: absolute;
 	left: 0;
-	top: $toolbarHeight;
-	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight});
+	top: $toolbarHeight + $filterBarHeight;
+	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight} - #{$filterBarHeight});
 	width: 65%;
-	background-color: cadetblue;
+	background-color: $backgroundColour;
 	display: block;
 	overflow-y: auto;
+	color: $textOnBackgroundColour;
+	font-weight: bolder;
+	z-index: 1000;
 }
 
 x-summaryPanel {
+	@include insetShadow;
 	position: absolute;
 	right: 0;
-	top: $toolbarHeight;
-	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight});
+	top: $toolbarHeight + $filterBarHeight;
+	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight} - #{$filterBarHeight});
 	width: 35%;
-	background-color: gold;
+	background-color: $panelColour;
 	display: block;
 	overflow-y: auto;
+	color: $textOnPanelColour;
+	z-index: 800;
 }
 
 x-badge {
@@ -153,22 +222,45 @@ x-badge {
 }
 
 x-filterBar {
+	//@include insetShadow;
 	position: absolute;
 	left: 0;
-	top: 0;
+	top: $toolbarHeight;
 	height: $filterBarHeight;
 	width: 100%;
-	background-color: crimson;
+	background-color: $accentColour;
 	display: block;
+	z-index: 900;
+	//background-image: linear-gradient(to bottom, $shadowColour 0%, $accentColour /*todo blend this with the shadow colour*/ 10%, $accentColour 100%);
 }
 
 x-resultsTree {
 	position: absolute;
 	left: 0;
-	top: $filterBarHeight;
-	height: calc(100% - #{$filterBarHeight});
+	top: 0;
+	height: 100%;
 	width: 100%;
-	background-color: pink;
 	display: block;
 	overflow-y: scroll;
+}
+
+
+[tooltip]:before {
+	opacity: 0;
+	background: rgba(black, 0.7);
+	padding: 4px 20px 4px 20px;
+	border-radius: 4px;
+	position: absolute;
+	left: calc(attr(left) + attr(width) / 2);
+	bottom: -12px;
+	content: attr(tooltip);
+	white-space: nowrap;
+	font-size: 11pt;
+	z-index: 9999999;
+	transition: opacity 0.15s ease-in-out 0s;
+}
+
+[tooltip]:hover:before {
+	opacity: 1;
+	transition: opacity 0.15s ease-in-out 0.6s;
 }

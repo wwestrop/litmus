@@ -2,7 +2,12 @@ html {
   box-sizing: border-box; }
 
 * {
-  box-sizing: inherit; }
+  box-sizing: inherit;
+  cursor: default;
+  user-select: none; }
+
+a {
+  cursor: pointer; }
 
 /*throbber-shell0 {
 	width: 100px;
@@ -54,7 +59,7 @@ throbber-shell2 {
 body {
   margin: 0;
   padding: 0;
-  background-color: #666794;
+  background-color: #515379;
   font-family: 'Noto Sans', 'Lucida Sans', Helvetica, 'Microsoft Sans Serif', Arial, sans-serif;
   font-size: 11pt;
   overflow: hidden; }
@@ -64,47 +69,84 @@ x-shell {
   height: 100vh;
   margin: 0;
   padding: 0;
-  background-color: #666794;
+  background-color: #515379;
   position: relative;
   display: block; }
 
 x-toolbar {
-  height: 80px;
+  height: 70px;
   width: 100%;
-  background-color: #45D399;
-  display: block; }
-
-x-statusbar {
-  height: 26px;
-  width: 100%;
-  background-color: #4545D3;
-  color: #FFF;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  padding: 3px 2px 3px 2px;
+  background-image: linear-gradient(to bottom, #4A4D66 0%, #4A4D66 93%, rgba(41, 41, 44, 0.8) 93%, #4545D3 100%);
   display: block;
-  box-sizing: border-box; }
+  z-index: 1000; }
+  x-toolbar x-tabGroup {
+    height: 60px;
+    display: block;
+    position: absolute;
+    top: calc(70px - 60px);
+    color: white;
+    font-size: 14pt; }
+    x-toolbar x-tabGroup.right {
+      right: 60px; }
+    x-toolbar x-tabGroup x-tab {
+      display: inline-block;
+      padding: 4px 30px 4px 30px;
+      height: 60px;
+      background-image: linear-gradient(to bottom, gray 0%, gray 92%, rgba(41, 41, 44, 0.8) 92%, #4545D3 100%);
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      border-top: 2px solid #3C3E50;
+      border-right: 2px solid #3C3E50;
+      border-left: 2px solid #3C3E50;
+      margin-left: -2px;
+      margin-right: -2px; }
+      x-toolbar x-tabGroup x-tab.active {
+        background-image: none;
+        background-color: #4545D3;
+        border-top: 2px solid #35378B;
+        border-right: 2px solid #35378B;
+        border-left: 2px solid #35378B;
+        margin-left: 0;
+        margin-right: 0; }
 
+/*x-statusbar {
+	height: $statusbarHeight;
+	width: 100%;
+	background-color: $accentColour;
+	color: $textColour;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	padding: 3px 2px 3px 2px;
+	display: block;
+	box-sizing: border-box;
+}*/
 x-resultsPanel {
+  box-shadow: rgba(41, 41, 44, 0.8) 0 4px 2px -2px inset;
   position: absolute;
   left: 0;
-  top: 80px;
-  height: calc(100vh - 80px - 26px);
+  top: 106px;
+  height: calc(100vh - 70px - 0px - 36px);
   width: 65%;
-  background-color: cadetblue;
+  background-color: #515379;
   display: block;
-  overflow-y: auto; }
+  overflow-y: auto;
+  color: #ACB2D0;
+  font-weight: bolder;
+  z-index: 1000; }
 
 x-summaryPanel {
+  box-shadow: rgba(41, 41, 44, 0.8) 0 4px 2px -2px inset;
   position: absolute;
   right: 0;
-  top: 80px;
-  height: calc(100vh - 80px - 26px);
+  top: 106px;
+  height: calc(100vh - 70px - 0px - 36px);
   width: 35%;
-  background-color: gold;
+  background-color: #6F719D;
   display: block;
-  overflow-y: auto; }
+  overflow-y: auto;
+  color: #2B2D3B;
+  z-index: 800; }
 
 x-badge {
   border-radius: 6px;
@@ -118,20 +160,38 @@ x-badge {
 x-filterBar {
   position: absolute;
   left: 0;
-  top: 0;
-  height: 30px;
+  top: 70px;
+  height: 36px;
   width: 100%;
-  background-color: crimson;
-  display: block; }
+  background-color: #4545D3;
+  display: block;
+  z-index: 900; }
 
 x-resultsTree {
   position: absolute;
   left: 0;
-  top: 30px;
-  height: calc(100% - 30px);
+  top: 0;
+  height: 100%;
   width: 100%;
-  background-color: pink;
   display: block;
   overflow-y: scroll; }
+
+[tooltip]:before {
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 4px 20px 4px 20px;
+  border-radius: 4px;
+  position: absolute;
+  left: calc(attr(left) + attr(width) / 2);
+  bottom: -12px;
+  content: attr(tooltip);
+  white-space: nowrap;
+  font-size: 11pt;
+  z-index: 9999999;
+  transition: opacity 0.15s ease-in-out 0s; }
+
+[tooltip]:hover:before {
+  opacity: 1;
+  transition: opacity 0.15s ease-in-out 0.6s; }
 
 /*# sourceMappingURL=shell.css.map */
