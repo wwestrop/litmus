@@ -9,6 +9,12 @@ html {
 a {
   cursor: pointer; }
 
+input[type="search"] {
+  cursor: text; }
+
+input[type="text"] {
+  cursor: text; }
+
 /*throbber-shell0 {
 	width: 100px;
 	height: 100px;
@@ -76,7 +82,7 @@ x-shell {
 x-toolbar {
   height: 70px;
   width: 100%;
-  background-image: linear-gradient(to bottom, #4A4D66 0px, #4A4D66 calc(70px - 5px), #2f2f4d calc(70px - 5px), #4545D3 100%);
+  background-color: #4A4D66;
   display: block;
   z-index: 1000; }
   x-toolbar x-tabGroup {
@@ -89,17 +95,23 @@ x-toolbar {
     x-toolbar x-tabGroup.right {
       right: 60px; }
     x-toolbar x-tabGroup x-tab {
+      position: relative;
       display: inline-block;
-      padding: 4px 30px 4px 30px;
+      width: auto;
+      padding: 4px 34px 4px 34px;
       height: 60px;
-      background-image: linear-gradient(to bottom, gray 0%, gray 92%, #2f2f4d 92%, #4545D3 100%);
+      background-color: gray;
       border-top-left-radius: 6px;
       border-top-right-radius: 6px;
       border-top: 2px solid #3C3E50;
       border-right: 2px solid #3C3E50;
       border-left: 2px solid #3C3E50;
-      margin-left: -2px;
-      margin-right: -2px; }
+      margin-left: calc(0px - 2px);
+      margin-right: calc(0px - 2px);
+      /*::after {
+      	border-image: linear-gradient(to bottom, black 0px, red 15px) 10;
+      	border-radius: inherit;
+      }*/ }
       x-toolbar x-tabGroup x-tab.active {
         background-image: none;
         background-color: #4545D3;
@@ -108,6 +120,16 @@ x-toolbar {
         border-left: 2px solid #35378B;
         margin-left: 0;
         margin-right: 0; }
+        x-toolbar x-tabGroup x-tab.active::after {
+          content: '';
+          display: block;
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: calc(60px - 2px);
+          height: 5px;
+          background-color: #4545D3;
+          z-index: 4000; }
 
 /*x-statusbar {
 	height: $statusbarHeight;
@@ -165,7 +187,8 @@ x-filterBar {
   width: 100%;
   background-color: #4545D3;
   display: block;
-  z-index: 900; }
+  z-index: 900;
+  background-image: linear-gradient(to bottom, #2f2f4d 0%, #4545D3 5px, #4545D3 100%); }
 
 x-resultsTree {
   position: absolute;
@@ -182,8 +205,7 @@ x-resultsTree {
   padding: 4px 20px 4px 20px;
   border-radius: 4px;
   position: absolute;
-  left: calc(attr(left) + attr(width) / 2);
-  bottom: -12px;
+  bottom: -20px;
   content: attr(tooltip);
   white-space: nowrap;
   font-size: 11pt;

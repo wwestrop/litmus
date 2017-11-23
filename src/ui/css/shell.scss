@@ -19,6 +19,7 @@ $shadowColour: #29292c;
 $toolbarShadowHeight: 5px;
 
 $tabHeight: 60px;
+$tabBorderWidth: 2px;
 
 
 html {
@@ -33,6 +34,14 @@ html {
 
 a {
 	cursor: pointer;
+}
+
+input[type="search"] {
+	cursor: text;
+}
+
+input[type="text"] {
+	cursor: text;
 }
 
 
@@ -123,7 +132,8 @@ x-toolbar {
 	height: $toolbarHeight;
 	width: 100%;
 	//background-image: linear-gradient(to bottom, $toolbarColour 0%, $toolbarColour /*todo blend this with the shadow colour*/ 93%, mix($shadowColour, $accentColour, 80%) 93%, $accentColour 100%);
-	background-image: linear-gradient(to bottom, $toolbarColour 0px, $toolbarColour calc(#{$toolbarHeight} - #{$toolbarShadowHeight}), mix($shadowColour, $accentColour, 80%) calc(#{$toolbarHeight} - #{$toolbarShadowHeight}), $accentColour 100%);
+	//background-image: linear-gradient(to bottom, $toolbarColour 0px, $toolbarColour calc(#{$toolbarHeight} - #{$toolbarShadowHeight}), mix($shadowColour, $accentColour, 80%) calc(#{$toolbarHeight} - #{$toolbarShadowHeight}), $accentColour 100%);
+	background-color: $toolbarColour;
 	display: block;
 	z-index: 1000;
 
@@ -140,27 +150,48 @@ x-toolbar {
 		}
 
 		x-tab {
+			position: relative;
 			display: inline-block;
-			padding: 4px 30px 4px 30px;
+			width: auto;
+			padding: 4px 34px 4px 34px;
 			height: $tabHeight;
-			background-image: linear-gradient(to bottom, gray 0%, gray 92%, mix($shadowColour, $accentColour, 80%) 92%, $accentColour 100%);
-			//background-image: linear-gradient(to bottom, gray 0px, gray 54px, mix($shadowColour, $accentColour, 80%) 54px, $accentColour 100%);
+			//background-image: linear-gradient(to bottom, gray 0%, gray 92%, mix($shadowColour, $accentColour, 80%) 92%, $accentColour 100%);
+			//background-image: linear-gradient(to bottom, gray 0px, gray calc(#{$tabHeight} - #{$toolbarShadowHeight} - #{$tabBorderWidth}), mix($shadowColour, $accentColour, 80%) calc(#{$tabHeight} - #{$toolbarShadowHeight} - #{$tabBorderWidth}), $accentColour 100%);
+			background-color: gray; // TODO change this
 			border-top-left-radius: 6px;
 			border-top-right-radius: 6px;
-			border-top: 2px solid #3C3E50;
-			border-right: 2px solid #3C3E50;
-			border-left: 2px solid #3C3E50;
-			margin-left: -2px;
-			margin-right: -2px;
-
+			border-top: $tabBorderWidth solid #3C3E50;
+			//box-shadow: #3C3E50 0 calc(0px - #{$tabBorderWidth}), #3C3E50 $tabBorderWidth 0, #3C3E50 calc(0px - #{$tabBorderWidth}) 0;
+			border-right: $tabBorderWidth solid #3C3E50;
+			border-left: $tabBorderWidth solid #3C3E50;
+			margin-left: calc(0px - #{$tabBorderWidth});
+			margin-right: calc(0px - #{$tabBorderWidth});
+			/*::after {
+				border-image: linear-gradient(to bottom, black 0px, red 15px) 10;
+				border-radius: inherit;
+			}*/
 			&.active {
 				background-image: none;
 				background-color: $accentColour;
-				border-top: 2px solid #35378B;
-				border-right: 2px solid #35378B;
-				border-left: 2px solid #35378B;
+				border-top: $tabBorderWidth solid #35378B;
+				border-right: $tabBorderWidth solid #35378B;
+				border-left: $tabBorderWidth solid #35378B;
+				//box-shadow: #35378B 0 calc(0px - #{$tabBorderWidth}), #35378B $tabBorderWidth 0, #35378B calc(0px - #{$tabBorderWidth}) 0;
 				margin-left: 0;
 				margin-right: 0;
+
+				&::after {
+					content: '';
+					display: block;
+					position: absolute;
+					left: 0; //$tabBorderWidth;
+					right: 0;
+					//width: calc(100% - 2 * #{$tabBorderWidth});
+					top: calc(#{$tabHeight} - #{$tabBorderWidth});
+					height: $toolbarShadowHeight;
+					background-color: $accentColour;
+					z-index: 4000;
+				}
 			}
 		}
 	}
@@ -232,7 +263,7 @@ x-filterBar {
 	background-color: $accentColour;
 	display: block;
 	z-index: 900;
-	//background-image: linear-gradient(to bottom, $shadowColour 0%, $accentColour /*todo blend this with the shadow colour*/ 10%, $accentColour 100%);
+	background-image: linear-gradient(to bottom, mix($shadowColour, $accentColour, 80%) 0%, $accentColour $toolbarShadowHeight, $accentColour 100%);
 }
 
 x-resultsTree {
@@ -252,8 +283,8 @@ x-resultsTree {
 	padding: 4px 20px 4px 20px;
 	border-radius: 4px;
 	position: absolute;
-	left: calc(attr(left) + attr(width) / 2);
-	bottom: -12px;
+	//left: calc(attr(left) + attr(width) / 2);
+	bottom: -20px;
 	content: attr(tooltip);
 	white-space: nowrap;
 	font-size: 11pt;
