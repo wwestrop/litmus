@@ -26,14 +26,15 @@
 			<!--<div class="statusDisplay"></div>-->
 
 			<x-tabGroup class="right">
-				<x-tab class="active"tooltip="Guten tag">Results</x-tab><x-tab tooltip="Hello world">Coverage</x-tab>
+				<x-tab class="active"tooltip="Guten tag">Results</x-tab>
+				<x-tab tooltip="Hello world">Coverage</x-tab>
 			</x-tabGroup>
 		</x-toolbar>
 
 		<x-filterBar>
-			Show only: <button>Passed</button><button>Failed</button><button>Inconclusive</button>
+			<span>Show only:&nbsp;</span><button>Passed</button><button>Failed</button><button>Inconclusive</button>
 			&nbsp;&nbsp;&nbsp;
-			Group by: <select>
+			<span>Group by:&nbsp;</span> <select>
 				<option value=""></option>
 				<option value="Test outcome">Test outcome</option>
 				<option value="Execution time">Execution time</option>

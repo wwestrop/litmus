@@ -150,10 +150,11 @@ x-toolbar {
 		}
 
 		x-tab {
+			float: left;
 			position: relative;
 			display: inline-block;
 			width: auto;
-			padding: 4px 34px 4px 34px;
+			padding: 0px 28px 0px 28px;
 			height: $tabHeight;
 			//background-image: linear-gradient(to bottom, gray 0%, gray 92%, mix($shadowColour, $accentColour, 80%) 92%, $accentColour 100%);
 			//background-image: linear-gradient(to bottom, gray 0px, gray calc(#{$tabHeight} - #{$toolbarShadowHeight} - #{$tabBorderWidth}), mix($shadowColour, $accentColour, 80%) calc(#{$tabHeight} - #{$toolbarShadowHeight} - #{$tabBorderWidth}), $accentColour 100%);
@@ -166,17 +167,23 @@ x-toolbar {
 			border-left: $tabBorderWidth solid #3C3E50;
 			margin-left: calc(0px - #{$tabBorderWidth});
 			margin-right: calc(0px - #{$tabBorderWidth});
-			/*::after {
-				border-image: linear-gradient(to bottom, black 0px, red 15px) 10;
-				border-radius: inherit;
-			}*/
+			line-height: $tabHeight;
+
+			// transition: box-shadow 0.2s ease-in-out;
+			// &:hover {
+			// 	box-shadow: rgba($accentColour, 0.8) 0 0 15px 4px;
+			// }
+
+			&.disabled {
+				opacity: 0.3;
+			}
+
 			&.active {
 				background-image: none;
 				background-color: $accentColour;
 				border-top: $tabBorderWidth solid #35378B;
 				border-right: $tabBorderWidth solid #35378B;
 				border-left: $tabBorderWidth solid #35378B;
-				//box-shadow: #35378B 0 calc(0px - #{$tabBorderWidth}), #35378B $tabBorderWidth 0, #35378B calc(0px - #{$tabBorderWidth}) 0;
 				margin-left: 0;
 				margin-right: 0;
 
@@ -264,6 +271,20 @@ x-filterBar {
 	display: block;
 	z-index: 900;
 	background-image: linear-gradient(to bottom, mix($shadowColour, $accentColour, 80%) 0%, $accentColour $toolbarShadowHeight, $accentColour 100%);
+	//padding-left: 10px;
+	//padding-right: 10px;
+	padding: calc(1.2 * #{$toolbarShadowHeight}) 15px $toolbarShadowHeight 15px;
+	//padding-top: calc(#{$toolbarShadowHeight} / 2);
+	//line-height: calc(#{$filterBarHeight} - c#{$toolbarShadowHeight} / 2);
+	// box-shadow: rgba(white, 0.2) 0px -1px 6px inset; // uncomment for a "plasticky" look to the filter bar
+
+	color: mix($accentColour, black, 40%);
+	text-shadow: 0px 1px 0px rgba(white, 0.1);
+	font-weight: bold;
+	
+	* {
+		vertical-align: middle;
+	}
 }
 
 x-resultsTree {
@@ -290,9 +311,18 @@ x-resultsTree {
 	font-size: 11pt;
 	z-index: 9999999;
 	transition: opacity 0.15s ease-in-out 0s;
+	line-height: normal;
 }
 
 [tooltip]:hover:before {
 	opacity: 1;
 	transition: opacity 0.15s ease-in-out 0.6s;
+}
+
+input[type="search"] {
+	outline-style: none; // Override webkit focus border
+	box-shadow: rgba(0, 0, 0, 0.5) 1px 1px 8px -1px inset, rgba(white, 0.2) 0px 1px; // Inner shadow, outer white edge contrast with filterbar
+	border-radius: 99999px;
+	padding: 3px 10px 3px 10px;
+	border: 1px solid #444;
 }

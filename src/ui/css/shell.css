@@ -95,10 +95,11 @@ x-toolbar {
     x-toolbar x-tabGroup.right {
       right: 60px; }
     x-toolbar x-tabGroup x-tab {
+      float: left;
       position: relative;
       display: inline-block;
       width: auto;
-      padding: 4px 34px 4px 34px;
+      padding: 0px 28px 0px 28px;
       height: 60px;
       background-color: gray;
       border-top-left-radius: 6px;
@@ -108,10 +109,9 @@ x-toolbar {
       border-left: 2px solid #3C3E50;
       margin-left: calc(0px - 2px);
       margin-right: calc(0px - 2px);
-      /*::after {
-      	border-image: linear-gradient(to bottom, black 0px, red 15px) 10;
-      	border-radius: inherit;
-      }*/ }
+      line-height: 60px; }
+      x-toolbar x-tabGroup x-tab.disabled {
+        opacity: 0.3; }
       x-toolbar x-tabGroup x-tab.active {
         background-image: none;
         background-color: #4545D3;
@@ -188,7 +188,13 @@ x-filterBar {
   background-color: #4545D3;
   display: block;
   z-index: 900;
-  background-image: linear-gradient(to bottom, #2f2f4d 0%, #4545D3 5px, #4545D3 100%); }
+  background-image: linear-gradient(to bottom, #2f2f4d 0%, #4545D3 5px, #4545D3 100%);
+  padding: calc(1.2 * 5px) 15px 5px 15px;
+  color: #1c1c54;
+  text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.1);
+  font-weight: bold; }
+  x-filterBar * {
+    vertical-align: middle; }
 
 x-resultsTree {
   position: absolute;
@@ -210,10 +216,18 @@ x-resultsTree {
   white-space: nowrap;
   font-size: 11pt;
   z-index: 9999999;
-  transition: opacity 0.15s ease-in-out 0s; }
+  transition: opacity 0.15s ease-in-out 0s;
+  line-height: normal; }
 
 [tooltip]:hover:before {
   opacity: 1;
   transition: opacity 0.15s ease-in-out 0.6s; }
+
+input[type="search"] {
+  outline-style: none;
+  box-shadow: rgba(0, 0, 0, 0.5) 1px 1px 8px -1px inset, rgba(255, 255, 255, 0.2) 0px 1px;
+  border-radius: 99999px;
+  padding: 3px 10px 3px 10px;
+  border: 1px solid #444; }
 
 /*# sourceMappingURL=shell.css.map */
