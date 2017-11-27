@@ -94,7 +94,9 @@ x-toolbar {
     font-size: 14pt; }
     x-toolbar x-tabGroup.right {
       right: 60px; }
-    x-toolbar x-tabGroup x-tab {
+    x-toolbar x-tabGroup input[type="radio"] {
+      display: none; }
+    x-toolbar x-tabGroup input[type="radio"] + label {
       float: left;
       position: relative;
       display: inline-block;
@@ -110,26 +112,36 @@ x-toolbar {
       margin-left: calc(0px - 2px);
       margin-right: calc(0px - 2px);
       line-height: 60px; }
-      x-toolbar x-tabGroup x-tab.disabled {
-        opacity: 0.3; }
-      x-toolbar x-tabGroup x-tab.active {
-        background-image: none;
-        background-color: #4545D3;
-        border-top: 2px solid #3737a9;
-        border-right: 2px solid #3737a9;
-        border-left: 2px solid #3737a9;
-        margin-left: 0;
-        margin-right: 0; }
-        x-toolbar x-tabGroup x-tab.active::after {
-          content: '';
-          display: block;
-          position: absolute;
-          left: 0;
-          right: 0;
-          top: calc(60px - 2px);
-          height: 5px;
-          background-color: #4545D3;
-          z-index: 4000; }
+    x-toolbar x-tabGroup input[type="radio"]:checked + label {
+      background-image: none;
+      background-color: #4545D3;
+      border-top: 2px solid #3737a9;
+      border-right: 2px solid #3737a9;
+      border-left: 2px solid #3737a9;
+      margin-left: 0;
+      margin-right: 0; }
+    x-toolbar x-tabGroup input[type="radio"]:checked + label::after {
+      content: '';
+      display: block;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(60px - 2px);
+      height: 5px;
+      background-color: #4545D3;
+      z-index: 4000; }
+    x-toolbar x-tabGroup input[type="radio"] + label + x-tabContent {
+      box-shadow: rgba(41, 41, 44, 0.8) 0 4px 2px -2px inset;
+      display: none;
+      position: fixed;
+      top: 106px;
+      left: 0px;
+      background-color: #515379;
+      z-index: 9999;
+      width: 100vw;
+      height: calc(100vh - 70px - 36px); }
+    x-toolbar x-tabGroup input[type="radio"]:checked + label + x-tabContent {
+      display: block; }
 
 /*x-statusbar {
 	height: $statusbarHeight;
@@ -147,9 +159,9 @@ x-resultsPanel {
   box-shadow: rgba(41, 41, 44, 0.8) 0 4px 2px -2px inset;
   position: absolute;
   left: 0;
-  top: 106px;
+  top: 0;
   height: calc(100vh - 70px - 0px - 36px);
-  width: 65%;
+  width: 100vw;
   background-color: #515379;
   display: block;
   overflow-y: auto;
@@ -160,8 +172,8 @@ x-resultsPanel {
 x-summaryPanel {
   box-shadow: rgba(41, 41, 44, 0.8) 0 4px 2px -2px inset;
   position: absolute;
-  right: 0;
-  top: 106px;
+  left: 0;
+  top: 0;
   height: calc(100vh - 70px - 0px - 36px);
   width: 35%;
   background-color: #6F719D;

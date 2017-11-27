@@ -149,7 +149,11 @@ x-toolbar {
 			right: 60px;
 		}
 
-		x-tab {
+		input[type="radio"] {
+			display: none;
+		}
+
+		input[type="radio"] + label {
 			float: left;
 			position: relative;
 			display: inline-block;
@@ -168,38 +172,45 @@ x-toolbar {
 			margin-left: calc(0px - #{$tabBorderWidth});
 			margin-right: calc(0px - #{$tabBorderWidth});
 			line-height: $tabHeight;
+		}
 
-			// transition: box-shadow 0.2s ease-in-out;
-			// &:hover {
-			// 	box-shadow: rgba($accentColour, 0.8) 0 0 15px 4px;
-			// }
+		input[type="radio"]:checked + label {
+			background-image: none;
+			background-color: $accentColour;
+			border-top: $tabBorderWidth solid mix($accentColour, black, 80%);
+			border-right: $tabBorderWidth solid mix($accentColour, black, 80%);
+			border-left: $tabBorderWidth solid mix($accentColour, black, 80%);
+			margin-left: 0;
+			margin-right: 0;
+		}
 
-			&.disabled {
-				opacity: 0.3;
-			}
+		input[type="radio"]:checked + label::after {
+			content: '';
+			display: block;
+			position: absolute;
+			left: 0; //$tabBorderWidth;
+			right: 0;
+			//width: calc(100% - 2 * #{$tabBorderWidth});
+			top: calc(#{$tabHeight} - #{$tabBorderWidth});
+			height: $toolbarShadowHeight;
+			background-color: $accentColour;
+			z-index: 4000;
+		}
 
-			&.active {
-				background-image: none;
-				background-color: $accentColour;
-				border-top: $tabBorderWidth solid mix($accentColour, black, 80%);
-				border-right: $tabBorderWidth solid mix($accentColour, black, 80%);
-				border-left: $tabBorderWidth solid mix($accentColour, black, 80%);
-				margin-left: 0;
-				margin-right: 0;
+		input[type="radio"] + label + x-tabContent {
+			@include insetShadow;
+			display: none;
+			position: fixed;
+			top: $toolbarHeight + $filterBarHeight;
+			left: 0px;
+			background-color: $backgroundColour;
+			z-index: 9999;
+			width: 100vw;
+			height: calc(100vh - #{$toolbarHeight} - #{$filterBarHeight});
+		}
 
-				&::after {
-					content: '';
-					display: block;
-					position: absolute;
-					left: 0; //$tabBorderWidth;
-					right: 0;
-					//width: calc(100% - 2 * #{$tabBorderWidth});
-					top: calc(#{$tabHeight} - #{$tabBorderWidth});
-					height: $toolbarShadowHeight;
-					background-color: $accentColour;
-					z-index: 4000;
-				}
-			}
+		input[type="radio"]:checked + label + x-tabContent {
+			display: block;
 		}
 	}
 }
@@ -221,9 +232,9 @@ x-resultsPanel {
 	@include insetShadow;
 	position: absolute;
 	left: 0;
-	top: $toolbarHeight + $filterBarHeight;
+	top: 0;
 	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight} - #{$filterBarHeight});
-	width: 65%;
+	width: 100vw;
 	background-color: $backgroundColour;
 	display: block;
 	overflow-y: auto;
@@ -235,8 +246,8 @@ x-resultsPanel {
 x-summaryPanel {
 	@include insetShadow;
 	position: absolute;
-	right: 0;
-	top: $toolbarHeight + $filterBarHeight;
+	left: 0;
+	top: 0;
 	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight} - #{$filterBarHeight});
 	width: 35%;
 	background-color: $panelColour;
