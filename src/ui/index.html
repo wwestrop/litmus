@@ -32,7 +32,13 @@
 		</x-toolbar>
 
 		<x-filterBar>
-			<span>Show only:&nbsp;</span><button>Passed</button><button>Failed</button><button>Inconclusive</button>
+			<span>Show:&nbsp;</span>
+			<x-buttonGroup>
+				<input type="radio" name="testStatusFilter" id="rStatusFilterAll" checked /><label for="rStatusFilterAll">All</label>
+				<input type="radio" name="testStatusFilter" id="rStatusFilterPassed" /><label for="rStatusFilterPassed">Passed</label>
+				<input type="radio" name="testStatusFilter" id="rStatusFilterFailed" /><label for="rStatusFilterFailed">Failed</label>
+				<input type="radio" name="testStatusFilter" id="rStatusFilterSkipped" /><label for="rStatusFilterSkipped">Skipped</label>
+			</x-buttonGroup>
 			&nbsp;&nbsp;&nbsp;
 			<span>Group by:&nbsp;</span> <select>
 				<option value=""></option>

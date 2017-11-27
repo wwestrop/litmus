@@ -181,9 +181,9 @@ x-toolbar {
 			&.active {
 				background-image: none;
 				background-color: $accentColour;
-				border-top: $tabBorderWidth solid #35378B;
-				border-right: $tabBorderWidth solid #35378B;
-				border-left: $tabBorderWidth solid #35378B;
+				border-top: $tabBorderWidth solid mix($accentColour, black, 80%);
+				border-right: $tabBorderWidth solid mix($accentColour, black, 80%);
+				border-left: $tabBorderWidth solid mix($accentColour, black, 80%);
 				margin-left: 0;
 				margin-right: 0;
 
@@ -277,11 +277,56 @@ x-filterBar {
 	//padding-top: calc(#{$toolbarShadowHeight} / 2);
 	//line-height: calc(#{$filterBarHeight} - c#{$toolbarShadowHeight} / 2);
 	// box-shadow: rgba(white, 0.2) 0px -1px 6px inset; // uncomment for a "plasticky" look to the filter bar
-
 	color: mix($accentColour, black, 40%);
 	text-shadow: 0px 1px 0px rgba(white, 0.1);
 	font-weight: bold;
-	
+
+	x-buttonGroup {
+		color: mix($accentColour, black, 10%);
+		display: inline-block;
+		vertical-align: auto;
+
+		input[type="radio"] {
+			display: none;
+		}
+
+		input[type="radio"]:checked + label {
+			box-shadow: rgba(255, 255, 255, 0.05) 0px -1px inset, rgba(255, 255, 255, 0.1) 0px 1px inset, rgba(white, 0.2) 0px 1px;
+			background-image: linear-gradient(to bottom, rgba(black, 0.6) 0px, rgba(black, 0.4) 6px);
+			color: white;
+			text-shadow: none;
+		}
+
+		input[type="radio"] + label {
+			float: left;
+			border: 1px solid rgba(black, 0.6);
+			border-left: none;
+			background-color: $accentColour;
+			background: linear-gradient(0deg, rgba(black, 0.15), rgba(white, 0.05));
+			box-shadow: rgba(255, 255, 255, 0.4) 0px 1px inset, rgba(white, 0.2) 0px 1px;
+			outline-style: none;
+			padding: 2px 10px 2px 10px;
+			font-family: inherit;
+			text-shadow: inherit;
+			font-weight: inherit;
+
+			&:first-of-type {
+				border-left: 1px solid rgba(black, 0.6);
+				border-top-left-radius: 3px;
+				border-bottom-left-radius: 3px;
+			}
+
+			&:last-of-type {
+				border-top-right-radius: 3px;
+				border-bottom-right-radius: 3px;
+			}
+			
+			// &:hover{
+			// 	box-shadow: rgba(white, 0.2) 0 0 14px inset;
+			// }
+		}
+	}
+
 	* {
 		vertical-align: middle;
 	}
