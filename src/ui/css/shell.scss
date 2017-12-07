@@ -169,8 +169,8 @@ x-toolbar {
 			//box-shadow: #3C3E50 0 calc(0px - #{$tabBorderWidth}), #3C3E50 $tabBorderWidth 0, #3C3E50 calc(0px - #{$tabBorderWidth}) 0;
 			border-right: $tabBorderWidth solid #3C3E50;
 			border-left: $tabBorderWidth solid #3C3E50;
-			margin-left: calc(0px - #{$tabBorderWidth});
-			margin-right: calc(0px - #{$tabBorderWidth});
+			margin-left: calc(0px - #{$tabBorderWidth} / 2);
+			margin-right: calc(0px - #{$tabBorderWidth} / 2);
 			line-height: $tabHeight;
 		}
 
@@ -180,8 +180,7 @@ x-toolbar {
 			border-top: $tabBorderWidth solid mix($accentColour, black, 80%);
 			border-right: $tabBorderWidth solid mix($accentColour, black, 80%);
 			border-left: $tabBorderWidth solid mix($accentColour, black, 80%);
-			margin-left: 0;
-			margin-right: 0;
+			z-index: 4000;
 		}
 
 		input[type="radio"]:checked + label::after {

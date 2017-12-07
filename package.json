@@ -2,7 +2,7 @@
   "name": "litmus",
   "version": "0.0.1",
   "description": "Litmus visual test runner for Javascript",
-  "main": "index.js",
+  "main": "bin/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,5 +23,10 @@
   "license": "MIT",
   "devDependencies": {
     "sass": "^1.0.0-beta.3"
+    "@types/mocha": "^2.2.44",
+    "electron": "^1.7.9",
+    "electron-packager": "^10.1.0",
+    "mocha": "^4.0.1",
+    "typescript": "^2.6.1"
   }
 }

@@ -109,8 +109,8 @@ x-toolbar {
       border-top: 2px solid #3C3E50;
       border-right: 2px solid #3C3E50;
       border-left: 2px solid #3C3E50;
-      margin-left: calc(0px - 2px);
-      margin-right: calc(0px - 2px);
+      margin-left: calc(0px - 2px / 2);
+      margin-right: calc(0px - 2px / 2);
       line-height: 60px; }
     x-toolbar x-tabGroup input[type="radio"]:checked + label {
       background-image: none;
@@ -118,8 +118,7 @@ x-toolbar {
       border-top: 2px solid #3737a9;
       border-right: 2px solid #3737a9;
       border-left: 2px solid #3737a9;
-      margin-left: 0;
-      margin-right: 0; }
+      z-index: 4000; }
     x-toolbar x-tabGroup input[type="radio"]:checked + label::after {
       content: '';
       display: block;
