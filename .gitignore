@@ -3,3 +3,4 @@
 /.vs/*
 *.map
 /**/.sass-cache/*
+bin/

@@ -22,11 +22,13 @@
   "author": "Will Westrop",
   "license": "MIT",
   "devDependencies": {
-    "sass": "^1.0.0-beta.3"
+    "sass": "^1.0.0-beta.3",
     "@types/mocha": "^2.2.44",
+    "@types/rx": "^4.1.1",
     "electron": "^1.7.9",
     "electron-packager": "^10.1.0",
     "mocha": "^4.0.1",
-    "typescript": "^2.6.1"
+    "typescript": "^2.6.1",
+    "rxjs": "^5.5.2"
   }
 }

@@ -11,21 +11,21 @@ mi.addFile("K:\\Users\\Will\\Git\\langserver-puppet\\client\\server\\test\\conte
 
 
 const e = mi.run(done)
-    .on('start', _a => {
+    .on('start', (_a: any) => {
         // Seems we cannot catch the start event as it's already fired. I guess we know
         // Because of the fact we called `.run()`
         console.log('Overall mocha start');
     })
-    .on('suite', _a => {
+    .on('suite', (_a: any) => {
         console.log('Overall mocha start');
     })
-    .on('suite end', _a => {
+    .on('suite end', (_a: any) => {
         console.log('Overall mocha start');
     })
-    .on('beforeAll', _a => {
+    .on('beforeAll', (_a: any) => {
         console.log('Overall mocha start');
     })
-    .on('hook', _a => {
+    .on('hook', (_a: any) => {
         console.log('Overall mocha start');
     })
     /*.on('test', function(test) {
@@ -44,10 +44,10 @@ const e = mi.run(done)
         console.log(test);
         console.log(err);
     })*/
-    .on('waiting', _a => {
+    .on('waiting', (_a: any) => {
         console.log('All done');
     })
-    .on('end', _a => {
+    .on('end', (_a: any) => {
         console.log('All done');
     });
 
