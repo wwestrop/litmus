@@ -1,7 +1,7 @@
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { Observable } from 'rxjs/Rx';
 import { ITestRun } from "../types/ITestRun";
-import { IRunner } from 'mocha';
+import { IRunner, ITest } from 'mocha';
 import { Observer } from 'rxjs/Observer';
 
 // import { TestStatus } from './TestStatus';
@@ -16,6 +16,12 @@ export class MochaTestRun implements ITestRun {
 	public readonly Duration: number;
 	public readonly Progress: Observable<number>;
 
+	public NumPassed: number = 0;
+	public NumFailed: number = 0;
+	public NumSkipped: number = 0;
+
+	private totalTests = 0;
+
 	private _progressSink: Observer<number>; // TODO any?????
 
 	/**
@@ -24,43 +30,28 @@ export class MochaTestRun implements ITestRun {
 	constructor(mocha: Mocha) {
 		// attach applicable event handlers
 		this._mochaRunner = mocha.run((e: any) => this.onRunCompleted(e));
+		this.totalTests = this._mochaRunner.total;
 
 		this.Progress = Observable.create((observer: any) => this.initialiseProgress(observer));
 
-		this._mochaRunner.on('start', (_a: any) => {
-			// Seems we cannot catch the start event as it's already fired. I guess we know
-			// Because of the fact we called `.run()`
-			console.log('>>>>>>>>  Overall mocha start');
-		})
-		.on('suite', (_a: any) => {
-			console.log('>>>>>>>>  suite');
-		})
-		.on('suite end', (_a: any) => {
-			console.log('>>>>>>>>  suite end');
-		})
-		.on('beforeAll', (_a: any) => {
-			console.log('>>>>>>>>  before all');
-		})
-		.on('hook', (_a: any) => {
-			console.log('>>>>>>>>  hook');
-		})
-		.on('test', (_a: any) => {
-			console.log('>>>>>>>>  Test');
-		})
-		.on('test end', (_a: any) => {
-			console.log('>>>>>>>>  Test end');
-		})
-		.on('pass', (_a: any) => {
-			console.log('>>>>>>>>  pass');
-		})
-		.on('fail', (_a: any, _err: any) => {
-			console.log('>>>>>>>>  fail');
-		})
-		.on('waiting', (_a: any) => {
-			console.log('>>>>>>>>  Waiting');
-		})
-		.on('end', (_a: any) => {
-			console.log('>>>>>>>>  end');
+		this._mochaRunner.on('test end', (a: ITest) => {
+			if (a.pending) {
+				this.NumSkipped++;
+			}
+			else if (a.state === "passed") {
+				this.NumPassed++;
+			}
+			else if (a.state === "failed") {
+				this.NumFailed++;
+			}
+			else {
+				throw `Unknown test status, '${a.state}'`;
+			}
+
+			var numDone = this.NumFailed + this.NumPassed + this.NumSkipped;
+			var pct = (numDone / this.totalTests) * 100; // TODO totalTests === 0 > DIV/0 error
+
+			this.reportProgress(pct);
 		});
 	}
 
@@ -87,40 +78,3 @@ export class MochaTestRun implements ITestRun {
 		this._progressSink.next(progress);
 	}
 }
-
-// /** Object returned when invoking a test run */
-// export interface ITestRun {
-
-//	 private _progress: Observable<number>;
-//	 private _overallResult: TestStatus;
-//	 public individualTestResults: TestCaseOutcome[] = [];
-//	 public _duration: number = 0;
-
-//	 constructor() {
-
-//		 this._progress = Observable.create((o: any) => {
-//			 o.next(24);
-//			 o.next(66);
-//			 o.next(88);
-//			 o.next(100);
-
-//			 o.complete();
-//		 });
-
-//	 }
-
-//	 public get Duration(): number {
-//		 return this._duration;
-//	 }
-
-//	 public get Progress(): Observable<number> {
-//		 return this._progress;
-//	 }
-
-//	 // TODO - but then is that the coverage of just the last run??
-//	 // TODO I could make all of this simpler by enforcing the "auto re-run on any change" rule
-//	 // Perhaps with a debounce - if another file saved within 2s, hold the tests????? Might get annoying if you genuinely want tests NOW
-//	 /*public get Coverage(): number {
-//		 return this._coverage;
-//	 }*/
-// }

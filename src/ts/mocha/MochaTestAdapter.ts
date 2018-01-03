@@ -18,22 +18,6 @@ export class MochaTestAdapter implements ITestAdapter {
 	}
 
 	public buildTestRunner(directory: string, ctxt?: LitmusContext): ITestRunner {
-
-		/* interface ReporterConstructor {
-		new(runner: Mocha.IRunner, options: any): any;
-		}*/
-
-		//let m: Mocha = new Mocha();
-
-		// // TODO not recursive?
-		// let files = Fs.readdirSync(directory).map(f => Path.join(directory, f)).filter(f => f.endsWith(".js"));
-		// files.forEach(f => m.addFile(f));
-
-		// m.run()
-		//	 .on("start", (_f: any) => {
-		//		 console.log("");
-		//	 });
-
 		return new MochaTestRunner(directory);
 	}
 }
