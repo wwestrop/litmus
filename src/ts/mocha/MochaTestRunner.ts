@@ -6,10 +6,12 @@ import { ITest } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
 import { Observable, Observer } from 'rxjs/Rx';
+import * as Fs from 'fs';
+import * as Path from 'path';
 
 export class MochaTestRunner implements ITestRunner {
 
-	constructor (/*private readonly*/ _directory: string) {
+	constructor (private readonly _directory: string) {
 	}
 
 	public run(ctxt?: LitmusContext): Observable<TestRun> {
@@ -27,10 +29,14 @@ export class MochaTestRunner implements ITestRunner {
 	}
 
 	private createObservable(observer: Observer<TestRun>): void {
-		let m = new Mocha();
-		m.addFile("C:\\Users\\Will\\Documents\\Git\\langserver-puppet\\client\\server\\test\\contextResolver.test.js"); // - TODO
+		const mocha = new Mocha();
 
-		const mochaRunner = m.run((e: any) => observer.complete());
+		const jsFiles =
+			this.walkSync(this._directory)
+			.filter(f => f.toLowerCase().endsWith(".js")); // TODO exclude node_modules ??????? Which means we have to do directory separators
+		jsFiles.forEach(f => mocha.addFile(f));
+
+		const mochaRunner = mocha.run((e: any) => observer.complete());
 		const totalTests = mochaRunner.total;
 
 		// TODO use linked list
@@ -67,5 +73,24 @@ export class MochaTestRunner implements ITestRunner {
 		progress = Math.min(progress, 100)
 
 		return progress;
+	}
+
+	// Adapted from https://gist.github.com/kethinov/6658166
+	// TODO would be even nicer if we injected a service to access this for us (and can stub out)
+	// TODO would be even nicer still if it returned an abstraction over the file, rather than the name. e.g extension without further copy-pasted parsing every which where it's used, filename vs pathname, parent dir, etc etc
+	/** List all files in a directory in Node.js recursively in a synchronous fashion */
+	private walkSync(dir: string, filelist?: string[]): string[] {
+		const files = Fs.readdirSync(dir);
+		filelist = filelist || [];
+		files.forEach((file: string) => {
+			if (Fs.statSync(Path.join(dir, file)).isDirectory()) {
+				filelist = this.walkSync(Path.join(dir, file), filelist);
+			}
+			else {
+				filelist!.push(Path.join(dir, file));
+			}
+		});
+
+		return filelist;
 	}
 }
