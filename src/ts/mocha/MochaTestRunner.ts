@@ -8,10 +8,11 @@ import { TestCase } from '../types/TestCase';
 import { Observable, Observer } from 'rxjs/Rx';
 import * as Fs from 'fs';
 import * as Path from 'path';
+import { Directory } from '../fileAccess/GenericFileAccess';
 
 export class MochaTestRunner implements ITestRunner {
 
-	constructor (private readonly _directory: string) {
+	constructor (private readonly _directory: Directory) {
 	}
 
 	public run(ctxt?: LitmusContext): Observable<TestRun> {
@@ -31,10 +32,9 @@ export class MochaTestRunner implements ITestRunner {
 	private createObservable(observer: Observer<TestRun>): void {
 		const mocha = new Mocha();
 
-		const jsFiles =
-			this.walkSync(this._directory)
-			.filter(f => f.toLowerCase().endsWith(".js")); // TODO exclude node_modules ??????? Which means we have to do directory separators
-		jsFiles.forEach(f => mocha.addFile(f));
+		const jsFiles = this._directory.getFilesRecursive()
+			.filter(f => f.name.toLowerCase().endsWith(".js")); // TODO exclude node_modules ??????? Which means we have to do directory separators
+		jsFiles.forEach(f => mocha.addFile(f.fullPath));
 
 		const mochaRunner = mocha.run((e: any) => observer.complete());
 		const totalTests = mochaRunner.total;

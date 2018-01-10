@@ -2,26 +2,22 @@ import { NpmPackage } from '../types/NpmPackage';
 import { ITestRunner } from '../logic/ITestRunner';
 import { ITestAdapter } from '../logic/ITestAdapter';
 import { LitmusContext } from '../types/LitmusContext';
-//import * as Mocha from 'mocha';
 import { MochaTestRunner } from './MochaTestRunner';
 import * as Path from 'path';
 import * as Fs from 'fs';
+import { Directory, File } from '../fileAccess/GenericFileAccess';
 
 export class MochaTestAdapter implements ITestAdapter {
 
-	public isFileCompatible(directory: string, foo: number, ctxt?: LitmusContext): boolean {
-		return false;
-	}
+	public isCompatible(directory: Directory, ctxt?: LitmusContext): boolean {
 
-	public isCompatible(directory: string, ctxt?: LitmusContext): boolean {
-
-		const npmPackageFile = this.locatePackageJson(directory);
+		const npmPackageFile = this.locatePackageJson(directory.fullPath);
 		if (!npmPackageFile) {
 			// TODO test for all these dropout cases
 			return false;
 		}
 
-		const fileContent = Fs.readFileSync(npmPackageFile, "utf8");
+		const fileContent = npmPackageFile.readSync("utf8");
 		const packageDeps = JSON.parse(<string>fileContent) as NpmPackage;
 		if (packageDeps.dependencies["mocha"] || packageDeps.devDependencies["mocha"])
 		{
@@ -37,17 +33,17 @@ export class MochaTestAdapter implements ITestAdapter {
 		// ^ Proper parser...... Or just grep the file and we're likely to get a good enough answer
 	}
 
-	public buildTestRunner(directory: string, ctxt?: LitmusContext): ITestRunner {
+	public buildTestRunner(directory: Directory, ctxt?: LitmusContext): ITestRunner {
 		return new MochaTestRunner(directory);
 	}
 
-	// TODO test this, since for some reason it doesn't come built in :'-(
-	private locatePackageJson(directory: string): string | undefined {
+	// TODO test this, since for some reason finding a directory parent, or if we're at root doesn't come built in :'-(
+	private locatePackageJson(directory: string): File | undefined {
 
 		const probePath = Path.join(directory, "package.json");
 		if (Fs.existsSync(probePath))
 		{
-			return probePath;
+			return new File(probePath);
 		}
 		else {
 			const parentDir = Path.join(directory, "..");
@@ -57,7 +53,7 @@ export class MochaTestAdapter implements ITestAdapter {
 				return undefined;
 			}
 			else {
-				return this.locatePackageJson(parentDir)
+				return this.locatePackageJson(parentDir);
 			}
 		}
 	}
