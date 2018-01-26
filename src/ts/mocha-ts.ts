@@ -1,7 +1,7 @@
 //import * as Mocha from "mocha";
 import { RunnerFactory } from './logic/RunnerFactory';
 import { MochaTestAdapter } from "./mocha/MochaTestAdapter";
-import { Directory } from './fileAccess/GenericFileAccess';
+import { Directory } from '../lib/LibFs/Fs';
 
 
 
