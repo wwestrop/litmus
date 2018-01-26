@@ -23,6 +23,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/mocha": "^2.2.47",
+    "@types/node": "^9.4.0",
     "electron": "^1.8.1",
     "electron-packager": "^10.1.1",
     "mocha": "^4.1.0",
