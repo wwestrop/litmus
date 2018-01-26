@@ -5,10 +5,11 @@ import * as Mocha from 'mocha';
 import { ITest } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
-import { Observable, Observer } from 'rxjs/Rx';
+import { Observer, Observable } from '../../lib/LibObservable/Observable{T}';
 import * as Fs from 'fs';
 import * as Path from 'path';
 import { Directory } from '../fileAccess/GenericFileAccess';
+//import "../../typings/mocha"; - works, but is emitted in the JS and breaks running under Node
 
 export class MochaTestRunner implements ITestRunner {
 
@@ -16,13 +17,8 @@ export class MochaTestRunner implements ITestRunner {
 	}
 
 	public run(ctxt?: LitmusContext): Observable<TestRun> {
-
-		//const o = Observable.create((observer: Observer<TestRun>) => this.createObservable(observer));
-		const o = Observable.create((observer: any) => this.createObservable(observer));
-
-		// TODO I don't know why Observable.create wants a different signature when the observer is strongly typeds
-		// Possiblity because I've got two lots of typings. Conflicting??
-		return (<Observable<TestRun>>o).share();
+		// TODO since replacing rxjs with my library - it doesn't do .share()
+		return new Observable<TestRun>((observer: Observer<TestRun>) => this.createObservable(observer));
 	}
 
 	public preRun(): void {
