@@ -1,6 +1,6 @@
 import { TestRun } from '../types/TestRun';
 import { LitmusContext } from '../types/LitmusContext';
-import { Observable } from '../../lib/LibObservable/Observable{T}';
+import { Observable } from '../../../lib/LibObservable/Observable{T}';
 
 export interface ITestRunner {
 

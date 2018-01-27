@@ -5,10 +5,10 @@ import * as Mocha from 'mocha';
 import { ITest } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
-import { Observer, Observable } from '../../lib/LibObservable/Observable{T}';
+import { Observer, Observable } from '../../../lib/LibObservable/Observable{T}';
 import * as Fs from 'fs';
 import * as Path from 'path';
-import { Directory } from '../../lib/LibFs/Fs';
+import { Directory } from '../../../lib/LibFs/Fs';
 //import "../../typings/mocha"; - works, but is emitted in the JS and breaks running under Node
 
 export class MochaTestRunner implements ITestRunner {

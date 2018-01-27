@@ -1,6 +1,6 @@
 import { LitmusContext } from '../types/LitmusContext';
 import { ITestRunner } from './ITestRunner';
-import { Directory } from '../../lib/LibFs/Fs';
+import { Directory } from '../../../lib/LibFs/Fs';
 
 /** "Entry point" for adding test frameworks to Litmus.
  *  Consumed by `RunnerFactory` and used to instiate the objects that will be later used to interact with the user's test cases */

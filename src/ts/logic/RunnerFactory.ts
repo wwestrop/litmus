@@ -1,7 +1,7 @@
 import { ITestAdapter } from './ITestAdapter';
 import { LitmusContext } from '../types/LitmusContext';
 import { ITestRunner } from './ITestRunner';
-import { Directory } from '../../lib/LibFs/Fs';
+import { Directory } from '../../../lib/LibFs/Fs';
 
 export class RunnerFactory {
 

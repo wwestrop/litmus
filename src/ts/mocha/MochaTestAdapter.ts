@@ -5,7 +5,7 @@ import { LitmusContext } from '../types/LitmusContext';
 import { MochaTestRunner } from './MochaTestRunner';
 import * as Path from 'path';
 import * as Fs from 'fs';
-import { Directory, File } from '../../lib/LibFs/Fs';
+import { Directory, File } from '../../../lib/LibFs/Fs';
 
 export class MochaTestAdapter implements ITestAdapter {
 
