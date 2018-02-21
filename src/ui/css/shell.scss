@@ -381,3 +381,19 @@ input[type="search"] {
 	padding: 3px 10px 3px 10px;
 	border: 1px solid #444;
 }
+
+x-markerBanner {
+	display: block;
+	background-color: rgb(207, 57, 57);
+	color: rgb(99, 27, 27);
+	transform: rotate(-45deg);
+	z-index: 99999;
+	position: fixed;
+	left: -60px;
+	top: 30px;
+	font-size: 18pt;
+	font-weight: bold;
+	padding: 10px 90px 10px 90px;
+	text-align: center;
+	text-transform: capitalize;
+}

@@ -271,4 +271,19 @@ input[type="search"] {
   padding: 3px 10px 3px 10px;
   border: 1px solid #444; }
 
+x-markerBanner {
+  display: block;
+  background-color: #cf3939;
+  color: #631b1b;
+  transform: rotate(-45deg);
+  z-index: 99999;
+  position: fixed;
+  left: -60px;
+  top: 30px;
+  font-size: 18pt;
+  font-weight: bold;
+  padding: 10px 90px 10px 90px;
+  text-align: center;
+  text-transform: capitalize; }
+
 /*# sourceMappingURL=shell.css.map */
