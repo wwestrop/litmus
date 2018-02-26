@@ -11,7 +11,7 @@ export class MochaTestAdapter implements ITestAdapter {
 
 	public isCompatible(directory: Directory, ctxt?: LitmusContext): boolean {
 
-		const npmPackageFile = this.locatePackageJson(directory.fullPath);
+		const npmPackageFile = this.locatePackageJson(directory);
 		if (!npmPackageFile) {
 			// TODO test for all these dropout cases
 			return false;
@@ -21,6 +21,7 @@ export class MochaTestAdapter implements ITestAdapter {
 		const packageDeps = JSON.parse(<string>fileContent) as NpmPackage;
 		if (packageDeps.dependencies["mocha"] || packageDeps.devDependencies["mocha"])
 		{
+			// TODO also check npm scripts "test", "tests", etc to see if mocha is called there (ie installed globally)
 			// TODO only supports having installed mocha via npm???
 			return true;
 		}
@@ -38,22 +39,24 @@ export class MochaTestAdapter implements ITestAdapter {
 	}
 
 	// TODO test this, since for some reason finding a directory parent, or if we're at root doesn't come built in :'-(
-	private locatePackageJson(directory: string): File | undefined {
+	private locatePackageJson(directory: Directory): File | undefined {
 
-		const probePath = Path.join(directory, "package.json");
-		if (Fs.existsSync(probePath))
-		{
-			return new File(probePath);
+		// TODO e:any is a workaround to a bug in the TS compiler
+		// https://github.com/Microsoft/TypeScript/issues/18562
+		const packageJsonFile = directory.contents
+			.filter((e: any): e is File => e instanceof File)
+			.filter(e => e.name.fullName.toLowerCase() === "package.json");
+
+		// TODO what does npm do in the presence of differently-cased "packaged.json"'s ????
+		if (packageJsonFile.length === 1) {
+			return packageJsonFile[0];
 		}
 		else {
-			const parentDir = Path.join(directory, "..");
-			if (parentDir === directory) {
-				// This is already the root directory.
-				// TODO. With JS you can *SEE* why you need tests so much. In any sensible language, I'd expect this to be built in, and not even *THINK* about having to test it
+			if (!directory.parent) {
 				return undefined;
 			}
 			else {
-				return this.locatePackageJson(parentDir);
+				return this.locatePackageJson(directory.parent);
 			}
 		}
 	}

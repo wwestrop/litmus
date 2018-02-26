@@ -4,7 +4,6 @@
 		"adjacent-overload-signatures": true,
 		"no-any": true,
 		"no-empty-interface": { "severity": "error" },
-		"only-arrow-functions": { "severity": "error" },
 		"await-promise": true,
 		"curly": { "severity": "error", "options": "ignore-same-line" },
 		"no-conditional-assignment": { "severity": "error" },

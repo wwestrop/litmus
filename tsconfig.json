@@ -2,6 +2,7 @@
     "compileOnSave": true,
     "compilerOptions": {
         "module": "commonjs",
+        "moduleResolution": "node",
         "target": "es2016",
         "removeComments": true,
         "preserveConstEnums": true,
@@ -19,7 +20,7 @@
         "outDir": "bin"
     },
     "include": [
-        "src/ts/**/*.ts",
+        "src/**/*.ts",
         "test/**/*.ts"
     ],
     "exclude": [

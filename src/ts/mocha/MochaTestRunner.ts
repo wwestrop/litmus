@@ -29,10 +29,10 @@ export class MochaTestRunner implements ITestRunner {
 		const mocha = new Mocha();
 
 		const jsFiles = this._directory.getFilesRecursive()
-			.filter(f => f.name.toLowerCase().endsWith(".js")); // TODO exclude node_modules ??????? Which means we have to do directory separators
+			.filter(f => f.name.fullName.toLowerCase().endsWith(".js")); // TODO exclude node_modules ??????? Which means we have to do directory separators
 		jsFiles.forEach(f => mocha.addFile(f.fullPath));
 
-		const mochaRunner = mocha.run((e: any) => observer.complete());
+		const mochaRunner = mocha.run((failures: number) => observer.complete());
 		const totalTests = mochaRunner.total;
 
 		// TODO use linked list
@@ -66,7 +66,7 @@ export class MochaTestRunner implements ITestRunner {
 
 	private capProgress(progress: number): number {
 		progress = Math.max(progress, 0);
-		progress = Math.min(progress, 100)
+		progress = Math.min(progress, 100);
 
 		return progress;
 	}
