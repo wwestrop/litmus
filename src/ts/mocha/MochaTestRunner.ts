@@ -30,7 +30,12 @@ export class MochaTestRunner implements ITestRunner {
 
 		const jsFiles = this._directory.getFilesRecursive()
 			.filter(f => f.name.fullName.toLowerCase().endsWith(".js")); // TODO exclude node_modules ??????? Which means we have to do directory separators
-		jsFiles.forEach(f => mocha.addFile(f.fullPath));
+		jsFiles.forEach(f => {
+			// https://github.com/mochajs/mocha/issues/3084
+			// TODO may have to watch package.json in case any deps get updated and blat the cache entirely
+			delete require.cache[f.fullPath];
+			mocha.addFile(f.fullPath);
+		});
 
 		const mochaRunner = mocha.run((failures: number) => observer.complete());
 		const totalTests = mochaRunner.total;
