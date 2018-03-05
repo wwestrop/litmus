@@ -14,7 +14,15 @@ ipcRenderer.on("update-test-results", (e: any, f: TestRun) => {
 	el.appendChild(btn);
 });
 
-ipcRenderer.on("dev-reset", (e: any) => {
+ipcRenderer.on("dev-reset", (e: Event) => {
+	// TOOD dev aid only
 	const el = document.getElementsByTagName("x-resultstree")[0];
 	el.innerHTML = "";
+});
+
+ipcRenderer.on("focusSearchBox", (e: Event) => {
+	const searchBox = document.getElementById("tests-searchbox") as HTMLInputElement;
+	searchBox.focus();
+	searchBox.selectionStart = 0;
+	searchBox.selectionEnd = searchBox.value.length;
 });

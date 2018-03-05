@@ -70,14 +70,7 @@ function initMainMenu() {
 		label: "Search",
 		accelerator: "F2",
 		click: () => {
-			// console.log("Search");
-			// const fname = `file://${__dirname}/ui/taskbarBadge-pass.png`;
-			// console.log(fname);
-
-			// /** TODO only works in render process */
-			// mainWindow.setOverlayIcon(
-			// 	nativeImage.createFromPath("file://C:\\Users\\Will\\Documents\\Git\\Litmus\\bin\\src\\ui\\taskbarBadge-pass.png"),
-			// 	"Passed");
+			mainWindow.webContents.send("focusSearchBox");
 		}
 	}));
 	menu.append(new MenuItem({
@@ -113,6 +106,9 @@ function initMainMenu() {
 	}));
 
 	Menu.setApplicationMenu(menu);
+
+	// app.dock.setBadge("x");
+	// app.dock.setIcon(""); // Do the overlay this way?
 }
 
 ipcMain.on("setProgressBar", (e: Event, progress: number, progbarState: Electron.ProgressBarOptions) => {
@@ -126,6 +122,7 @@ ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
 });
 
 // function flashTaskbarIcon() {
+//  app.dock.bounce();
 // 	mainWindow.flashFrame(true);
 // 	setTimeout(() => {
 // 		mainWindow.flashFrame(false);
