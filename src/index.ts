@@ -5,7 +5,7 @@ import { MochaTestAdapter } from "./ts/mocha/MochaTestAdapter";
 import { TestsNotDiscoveredException } from './ts/exceptions/TestsNotDiscoveredException';
 import { prototype } from "events";
 
-let mainWindow: BrowserWindow;
+/*export*/ let mainWindow: BrowserWindow; // so other processes can poke at it (eg when runner has sth to report, poke in a message via its webcontents, set its progressbar from the main thread - shoulg that win be responsible for setting its own progress? probably. would invilve an extra RPC call though)
 let backgroundWorker: BrowserWindow;
 
 
@@ -16,6 +16,7 @@ function initMainWindow() {
 	initMainMenu();
 
 	backgroundWorker = new BrowserWindow({show: false});
+	backgroundWorker.loadURL(`file://${__dirname}/ui/backgroundTestRunnerWorker.html`);
 
 	mainWindow = new BrowserWindow({
 		width: 1100,
@@ -24,7 +25,7 @@ function initMainWindow() {
 		// minHeight: 350,
 		title: "Litmus",
 		backgroundColor: "#6F719D", // TODO factor colour from SASS/CSS somehow?
-		//show: false,
+		show: true,
 		//icon: "",
 		//titleBarStyle: "", // depend if macOS?
 	});
@@ -32,10 +33,7 @@ function initMainWindow() {
 	// TODO these files will be packaged nicely somewhere else
 	mainWindow.loadURL(`file://${__dirname}/ui/index.html`);
 
-	//mainWindow.setProgressBar(0.67);
-
 	// TODO icon
-	// TODO background colour
 
 	// TODO two finger scrolling v. unrepsonsive (Windows 10 / precision touchpad)
 	// https://github.com/electron/electron/issues/8960 it"s a bug. resize window fixes it
@@ -45,7 +43,7 @@ function initMainWindow() {
 		// MainWindow is non-null for the entire duration of the application
 		// It's only upon closing that we null it, hence force-casting here to avoid type assertions everywhere else
 		//(mainWindow as any) = null;
-		app.quit();
+		app.exit();
 	});
 
 	// app.on("window-all-closed", () => {
@@ -65,6 +63,7 @@ function initMainMenu() {
 		accelerator: "F12",
 		click: () => {
 			mainWindow.webContents.toggleDevTools();
+			backgroundWorker.webContents.toggleDevTools();
 		}
 	}));
 	menu.append(new MenuItem({
@@ -103,46 +102,11 @@ function initMainMenu() {
 				(s: string[]) => {
 					if (s) {
 						const dir = new Directory(s[0]);
-						const appTitle = `${dir.name} - Litmus`;
-						console.log(`Selected '${appTitle}'`);
+						mainWindow.setTitle(`${dir.name} - Litmus`);
 
-						// TODO factor out
-						// TODO push to another BrowserWindow ( = new process) as the main Electon process is a bottleneck for the renderer
-						// TODO maybe can get rid of the de-caching issue by always restarting the child process
-						try {
-							const runnerFactory = new RunnerFactory([new MochaTestAdapter()]); // TODO init only once
-							const runner = runnerFactory.build(dir);
-
-							runner.run()
-								.subscribe(tr => {
-									console.log(`${tr.IndividualTestResults.length} @ ${tr.Duration}s (${tr.Progress} %)`);
-									let progress = tr.Progress / 100;
-									progress = progress < 0 || progress >= 1 ? -1 : progress; // TODO do I want the progress to disappear immediately?
-
-									const progbarState = tr.NumFailed === 0 ? "normal": "error";
-
-									mainWindow.setProgressBar(progress, {mode: progbarState});
-
-									// ipcRenderer.send("update-test-results", tr);
-									// ipcMain.
-									console.log(`>${new Date().getTime()}`);
-									mainWindow.webContents.send("update-test-results", tr.toJSON()); // TODO not sync - out of order messages?
-
-									// if (progress < 0 && progbarState === "error") {
-									// 	flashTaskbarIcon();
-									// }
-								});
-						}
-						catch (ex) {
-							if (ex instanceof TestsNotDiscoveredException) {
-								dialog.showErrorBox(
-									"Couldn't find any tests",
-									`We couldn't find any tests in "${ex.directory.name}", or we don't have support for your testing framework yet.`);
-							}
-							else {
-								throw ex;
-							}
-						}
+						// TODO maybe can get rid of the de-caching issue by always restarting the child process/BrowserWindow
+						// TODO Investigate requireTaskPool
+						backgroundWorker.webContents.send("testrun-rpc-start", s[0]);
 					}
 				});
 		}
@@ -150,6 +114,16 @@ function initMainMenu() {
 
 	Menu.setApplicationMenu(menu);
 }
+
+ipcMain.on("setProgressBar", (e: Event, progress: number, progbarState: Electron.ProgressBarOptions) => {
+	mainWindow.setProgressBar(progress, progbarState);
+});
+
+// TODO ICKY string. But multiple serialsiation roundtrips going on here
+// to communciate from a hidden processing window to the main window
+ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
+	mainWindow.webContents.send("update-test-results", testrunJson); // TODO not sync - out of order messages?
+});
 
 // function flashTaskbarIcon() {
 // 	mainWindow.flashFrame(true);
