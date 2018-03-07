@@ -7,4 +7,11 @@ export class TestCase {
 	// BUT - if I keep them distinct, it means some code to map the results back against the cases list
 	public displayName: string;
 	public childTestCases: TestCase[] = [];
+
+	/** Hierarchical organisation of the test, eg by suites and nested suites, by file, etc, as depending on
+	 *  what the framework supports */
+	public hierarchy: string[];
+
+	/** The file which the test case came from */
+	public fileName: string;
 }

@@ -356,6 +356,8 @@ x-resultsTree {
 		margin: 2px 0 2px 20px;
 		font-size: 11pt;
 		font-weight: normal;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 }
 

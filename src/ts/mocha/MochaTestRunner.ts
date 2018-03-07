@@ -10,6 +10,7 @@ import * as Fs from 'fs';
 import * as Path from 'path';
 import { Directory } from '../../lib/LibFs/Fs';
 //import "../../typings/mocha"; - works, but is emitted in the JS and breaks running under Node
+import { TestStatus } from '../types/TestStatus';
 
 export class MochaTestRunner implements ITestRunner {
 
@@ -42,24 +43,23 @@ export class MochaTestRunner implements ITestRunner {
 
 		// TODO use linked list
 		// Right now we're sharing the array between every `TestRun`, but really we want each to be independant
-		// Copying the array every time will take up lots of space
+		// Copying the array every time will take up lots of space (and lots of garbage collection)
 		const allResults = new Array<TestCaseOutcome>();
 		let numTestsRun: number = 0;
 
 		mochaRunner.on('test end', (t: ITest) => {
-			if (t.pending) {
-				allResults.push(new TestCaseOutcome(new TestCase(), "Skipped", t.duration || 0));
-			}
-			else if (t.state === "passed") {
-				allResults.push(new TestCaseOutcome(new TestCase(), "Passed", t.duration || 0));
-			}
-			else if (t.state === "failed") {
-				allResults.push(new TestCaseOutcome(new TestCase(), "Failed", t.duration || 0));
-			}
-			else {
-				throw `Unknown test status, '${t.state}'`;
-				// TODO observable.error????
-			}
+			const testDuration = t.duration || 0;
+			const testStatus = this.getTestStatus(t);
+
+			const testCase = new TestCase();
+			testCase.displayName = t.title;
+			testCase.hierarchy = this.constructHierarchy(t);
+			testCase.fileName = t.file || ""; // TODO support frameworks that don't give us the file
+			// TODO make "attaching bits of metadata" to the test case a more generic thing
+			// TODO so we can group testsarbitrarily (depending as the framework supports)
+
+			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration));
+
 
 			numTestsRun++;
 			const pct = this.capProgress((numTestsRun / totalTests) * 100); // TODO totalTests === 0 > DIV/0 error
@@ -69,29 +69,41 @@ export class MochaTestRunner implements ITestRunner {
 		});
 	}
 
+	private getTestStatus(test: ITest): TestStatus {
+		if (test.pending) {
+			return "Skipped";
+		}
+		else if (test.state === "passed") {
+			return "Passed";
+		}
+		else if (test.state === "failed") {
+			return "Failed";
+		}
+		else {
+			throw `Unknown test status, '${test.state}'`;
+			// TODO observable.error????
+		}
+	}
+
+	private constructHierarchy(test: ITest): string[] {
+		return this.constructHierarchy2(test.parent);
+	}
+
+	// TODO better name than "2 suffix".
+	// Won't support method overloading
+	// Could do type A | B - but they are interface types at compile-time only, then need some typeguard or whatnot
+	private constructHierarchy2(suite: Mocha.ISuite): string[] {
+		if (!suite || !suite.parent) {
+			return [];
+		}
+
+		return [...this.constructHierarchy2(suite.parent), suite.title];
+	}
+
 	private capProgress(progress: number): number {
 		progress = Math.max(progress, 0);
 		progress = Math.min(progress, 100);
 
 		return progress;
-	}
-
-	// Adapted from https://gist.github.com/kethinov/6658166
-	// TODO would be even nicer if we injected a service to access this for us (and can stub out)
-	// TODO would be even nicer still if it returned an abstraction over the file, rather than the name. e.g extension without further copy-pasted parsing every which where it's used, filename vs pathname, parent dir, etc etc
-	/** List all files in a directory in Node.js recursively in a synchronous fashion */
-	private walkSync(dir: string, filelist?: string[]): string[] {
-		const files = Fs.readdirSync(dir);
-		filelist = filelist || [];
-		files.forEach((file: string) => {
-			if (Fs.statSync(Path.join(dir, file)).isDirectory()) {
-				filelist = this.walkSync(Path.join(dir, file), filelist);
-			}
-			else {
-				filelist!.push(Path.join(dir, file));
-			}
-		});
-
-		return filelist;
 	}
 }

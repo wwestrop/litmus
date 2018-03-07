@@ -7,6 +7,7 @@ declare module "mocha" {
 
 	 export interface ITest {
 		duration: number;
+		file?: string;
 	}
 }
 
