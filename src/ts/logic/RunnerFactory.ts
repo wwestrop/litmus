@@ -2,6 +2,7 @@ import { ITestAdapter } from './ITestAdapter';
 import { LitmusContext } from '../types/LitmusContext';
 import { ITestRunner } from './ITestRunner';
 import { Directory } from '../../../lib/LibFs/Fs';
+import { TestsNotDiscoveredException } from '../exceptions/TestsNotDiscoveredException';
 
 export class RunnerFactory {
 
@@ -11,7 +12,7 @@ export class RunnerFactory {
 	public build(directory: Directory, ctxt?: LitmusContext): ITestRunner {
 		const suitableTestAdapter = this._adapters.find(a => a.isCompatible(directory, ctxt));
 		if (!suitableTestAdapter) {
-			throw `The directory '${directory}' does not contain any tests compatible with Litmus.`
+			throw new TestsNotDiscoveredException(directory);
 		}
 
 		return suitableTestAdapter.buildTestRunner(directory, ctxt);

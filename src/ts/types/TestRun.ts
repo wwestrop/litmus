@@ -36,4 +36,17 @@ export class TestRun {
 	/*public get Coverage(): number {
 		return this._coverage;
 	}*/
+
+	// When communincating this object across the IPC via JSON serialisation, property getters will not be called 😢
+	// TODO find a nicer way
+	public toJSON(): any {
+		return {
+			Duration: this.Duration,
+			NumPassed: this.NumPassed,
+			NumFailed: this.NumFailed,
+			NumSkipped: this.NumSkipped,
+			IndividualTestResults: this.IndividualTestResults,
+			Progress: this.Progress,
+		};
+	}
 }

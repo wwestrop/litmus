@@ -2,6 +2,7 @@
 <head>
 	<link rel="stylesheet" href="css/shell.css" />
 	<link href="https://fonts.googleapis.com/css?family=Noto+Sans" rel="stylesheet">
+	<script src="script/lib/require.js"></script>
 </head>
 
 <body>
@@ -70,12 +71,13 @@
 			&nbsp;&nbsp;&nbsp;
 			<span>Group by:&nbsp;</span> <select>
 				<option value=""></option>
+				<option value="File">File</option>
 				<option value="Test outcome">Test outcome</option>
 				<option value="Execution time">Execution time</option>
 				<option value="Class/Namespace">Class/Namespace</option>
 			</select>
 			&nbsp;&nbsp;&nbsp;
-			<input type="search" />
+			<input id="tests-searchbox" type="search" />
 		</x-filterBar>
 
 
@@ -84,6 +86,14 @@
 		<!--<x-statusbar>&nbsp; Status: Ready | Tests: <x-badge class="pass">54</x-badge> passed, <x-badge class="fail">2</x-badge> failed | Testing in progress: <x-progressbar></x-progressbar></x-statusbar>-->
 	</x-shell>
 
+	<!-- TODO should this go in x-shell, should x-shell exist? -->
+	<x-markerBanner>Alpha</x-markerBanner>
+
 </body>
+
+
+<script>
+	require('./script/renderer.js');
+</script>
 
 </html>

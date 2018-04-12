@@ -20,11 +20,24 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Stub",
             "program": "${workspaceFolder}/bin/src/ts/mocha-ts.js",
             "protocol": "inspector",
             "preLaunchTask": "tsc-compile",
             "sourceMaps": true
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceRoot}",
+            "name": "Launch Electron",
+            "protocol": "inspector",
+            "preLaunchTask": "tsc-compile",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+            "windows": {
+              "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
+            },
+            "args" : ["bin/src"]
+          }
     ]
 }

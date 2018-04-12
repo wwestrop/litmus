@@ -1,9 +1,43 @@
 import * as Fs from 'fs';
 import * as Path from 'path';
 
+export module LibFs {
+	export const separator: string = Path.sep;
+}
+
+function isDirectory(path: string): boolean | undefined {
+	try {
+		return Fs.statSync(path).isDirectory();
+	}
+	catch {
+		// TODO don't like swalling any exception like this.
+		// Is there ***REALLY*** no way to tell if a path is a directoty or not,
+		// without accessing the thing?
+
+		// TODO be more picky with the error codes if I can, still not ideal though
+
+		// TODO and related, does this mean (as I did supect) that perf of all these
+		// .stat() calls will be horrific??
+		return undefined;
+	}
+}
+
 // TODO this whole thing should be exported as a module. I'm frankly shocked the built in libs
 // have you dealing with such raw primitives
 export class FileName {
+
+	public get fullName(): string {
+		if (this.prefix && this.extension) {
+			return `${this.prefix}.${this.extension}`;
+		}
+		else if (this.prefix) {
+			return this.prefix;
+		}
+		else {
+			return `.${this.extension}`;
+		}
+	}
+
 	constructor(public readonly prefix?: string, public readonly extension?: string) {
 	}
 
@@ -12,7 +46,7 @@ export class FileName {
 		let prefix: string | undefined;
 		let extension: string | undefined;
 
-		const i = fullPath.lastIndexOf(Path.sep);
+		const i = fullPath.lastIndexOf(LibFs.separator);
 		const fileName = fullPath.substring(i + 1);
 
 		const j = fileName.lastIndexOf(".");
@@ -27,30 +61,25 @@ export class FileName {
 			extension = fileName.substring(j + 1);
 		}
 
-		return new FileName(prefix, extension)
+		return new FileName(prefix, extension);
 	}
 }
 
 export class File {
 	constructor(public readonly fullPath: string) {
-		this.nameEx = FileName.fromFullPath(fullPath);
+		this.name = FileName.fromFullPath(fullPath);
 	}
 
 	public get directory(): Directory {
 		// TODO not really any need to compute these every time, though it does separate out each bit of parsing
 		// TODO would make Javascript interop easier, as they wouldn't have to call it as a getter function
-		const nameLen = this.name.length;
+		const nameLen = this.name.fullName.length;
 		const dirName = this.fullPath.substring(0, this.fullPath.length - nameLen);
 
 		return new Directory(dirName);
 	}
 
-	// TODO unsure of this API. Should I expose just name, extension, and nameWithExtension?
-	public readonly nameEx: FileName;
-
-	public get name(): string {
-		return `${this.nameEx.prefix}.${this.nameEx.extension}`;
-	}
+	public readonly name: FileName;
 
 	// TODO unsure of this API
 	// public get stat(): Fs.Stats {
@@ -64,11 +93,11 @@ export class File {
 
 export class Directory {
 	constructor(public readonly fullPath: string) {
-		if (fullPath.endsWith(Path.sep)) {
-			fullPath = fullPath.substring(0, fullPath.length - Path.sep.length);
+		if (fullPath.endsWith(LibFs.separator)) {
+			fullPath = fullPath.substring(0, fullPath.length - LibFs.separator.length);
 		}
 
-		const i = fullPath.lastIndexOf(Path.sep);
+		const i = fullPath.lastIndexOf(LibFs.separator);
 		this.name = fullPath.substring(i + 1);
 	}
 
@@ -76,17 +105,26 @@ export class Directory {
 		return Fs.readdirSync(this.fullPath)
 			.map(f => {
 				const fullPath = Path.join(this.fullPath, f);
-				if (Fs.statSync(fullPath).isDirectory()) {
+				const isDir = isDirectory(fullPath);
+				if (isDir === true) {
 					return new Directory(fullPath);
 				}
-				else {
+				else if (isDir === false) {
 					return new File(fullPath);
 				}
-			});
+				else {
+					return undefined;
+				}
+			})
+			.filter(this.isFileSystemEntity);
 	}
 
 	public getFilesRecursive(): File[] {
 		return this.walkSync(this.fullPath, []);
+	}
+
+	private isFileSystemEntity(e: File | Directory | undefined): e is File | Directory {
+		return e instanceof File || e instanceof Directory;
 	}
 
 	// Adapted from https://gist.github.com/kethinov/6658166
@@ -95,7 +133,7 @@ export class Directory {
 		const files = Fs.readdirSync(dir);
 		files.forEach((file: string) => {
 			const fsEntryPath = Path.join(dir, file);
-			if (Fs.statSync(fsEntryPath).isDirectory()) {
+			if (isDirectory(fsEntryPath) === true) {
 				accumulator = this.walkSync(fsEntryPath, accumulator);
 			}
 			else {
