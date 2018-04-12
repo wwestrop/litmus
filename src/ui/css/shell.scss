@@ -350,10 +350,12 @@ x-resultsTree {
 	width: 100%;
 	display: block;
 	overflow-y: scroll;
+	overflow-x: hidden;
 
 	// TODO Delete this - it's temporary so I can debug and get more on screen
 	p {
 		margin: 2px 0 2px 20px;
+		padding-right: 50px;
 		font-size: 11pt;
 		font-weight: normal;
 		text-overflow: ellipsis;

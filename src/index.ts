@@ -4,6 +4,7 @@ import { RunnerFactory } from './ts/logic/RunnerFactory';
 import { MochaTestAdapter } from "./ts/mocha/MochaTestAdapter";
 import { TestsNotDiscoveredException } from './ts/exceptions/TestsNotDiscoveredException';
 import { prototype } from "events";
+import * as Path from 'path';
 
 /*export*/ let mainWindow: BrowserWindow; // so other processes can poke at it (eg when runner has sth to report, poke in a message via its webcontents, set its progressbar from the main thread - shoulg that win be responsible for setting its own progress? probably. would invilve an extra RPC call though)
 let backgroundWorker: BrowserWindow;
@@ -118,6 +119,14 @@ ipcMain.on("setProgressBar", (e: Event, progress: number, progbarState: Electron
 // TODO ICKY string. But multiple serialsiation roundtrips going on here
 // to communciate from a hidden processing window to the main window
 ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
+
+	const overlayIcon = Path.resolve("src/ui/failBadge.png");
+
+	// TODO create the nativeimages once and store them
+	mainWindow.setOverlayIcon(
+		nativeImage.createFromPath(overlayIcon),
+		"Tests passed");
+
 	mainWindow.webContents.send("update-test-results", testrunJson); // TODO not sync - out of order messages?
 });
 

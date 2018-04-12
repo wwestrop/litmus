@@ -58,6 +58,10 @@ export class MochaTestRunner implements ITestRunner {
 			// TODO make "attaching bits of metadata" to the test case a more generic thing
 			// TODO so we can group testsarbitrarily (depending as the framework supports)
 
+			// TODO remove the redundant fields - `groupingKeys` is a generic way of supporting whatever a framework might support
+			testCase.groupingKeys["suite"] = testCase.hierarchy;
+			testCase.groupingKeys["file"] = testCase.fileName;
+
 			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration));
 
 

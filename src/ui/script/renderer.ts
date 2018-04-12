@@ -2,7 +2,7 @@ import { ipcRenderer } from 'electron';
 import { TestRun } from '../../ts/types/TestRun';
 
 // TODO factor constant
-ipcRenderer.on("update-test-results", (e: any, f: TestRun) => {
+ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 
 	console.log(new Date().getTime());
 

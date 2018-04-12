@@ -12,6 +12,10 @@ export class TestCase {
 	 *  what the framework supports */
 	public hierarchy: string[];
 
+	/** An associative array of all the fields supported by a test runner frameowrk,
+	 *  of which the tests can be grouped in the UI. May be hierarchical (ie a list of strings) */
+	public groupingKeys: {[groupingField: string]: string[] | string; } = {};
+
 	/** The file which the test case came from */
 	public fileName: string;
 }
