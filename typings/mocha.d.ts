@@ -3,8 +3,11 @@
 
 //// <reference types="node" />
 
+// TODO - why are there two files for these typings, with two syntaxes?
+
 declare namespace Mocha {
    interface IRunner extends NodeJS.EventEmitter {
+       total: number;
    }
 
    interface ISuite extends NodeJS.EventEmitter {
@@ -14,5 +17,8 @@ declare namespace Mocha {
        tests: Mocha.ITest[];
        pending: boolean;
        root: boolean;
+
+       duration: number;
+       file?: string;
    }
 }

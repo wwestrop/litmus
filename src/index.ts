@@ -120,6 +120,8 @@ ipcMain.on("setProgressBar", (e: Event, progress: number, progbarState: Electron
 // to communciate from a hidden processing window to the main window
 ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
 
+	// TODO sort the paths out for dist
+	// TODO deserialise to determine if pass or fail
 	const overlayIcon = Path.resolve("src/ui/failBadge.png");
 
 	// TODO create the nativeimages once and store them
