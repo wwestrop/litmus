@@ -10,13 +10,15 @@ import * as Path from 'path';
 let backgroundWorker: BrowserWindow;
 
 
+const devMode = process.env["LITMUS_DEV"] !== undefined && process.env["LITMUS_DEV"] !== "0";
+
 app.on("ready", initMainWindow);
 
 function initMainWindow() {
 
 	initMainMenu();
 
-	backgroundWorker = new BrowserWindow({show: false});
+	backgroundWorker = new BrowserWindow({show: devMode});
 	backgroundWorker.loadURL(`file://${__dirname}/ui/backgroundTestRunnerWorker.html`);
 
 	mainWindow = new BrowserWindow({
@@ -27,6 +29,11 @@ function initMainWindow() {
 		title: "Litmus",
 		backgroundColor: "#6F719D", // TODO factor colour from SASS/CSS somehow?
 		show: true,
+		// webPreferences: {
+		// 	devTools: devMode,
+		// 	scrollBounce: true,
+		// }
+
 		//icon: "",
 		//titleBarStyle: "", // depend if macOS?
 	});
@@ -53,6 +60,11 @@ function initMainWindow() {
 	// 		app.quit();
 	// 	}
 	// });
+
+	if (devMode) {
+		mainWindow.webContents.openDevTools();
+		backgroundWorker.webContents.openDevTools();
+	}
 }
 
 /** Also sets-up application keyboard shortcuts */

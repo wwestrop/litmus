@@ -60,7 +60,7 @@ export class MochaTestRunner implements ITestRunner {
 
 			// TODO remove the redundant fields - `groupingKeys` is a generic way of supporting whatever a framework might support
 			testCase.groupingKeys["suite"] = testCase.hierarchy;
-			testCase.groupingKeys["file"] = testCase.fileName;
+			testCase.groupingKeys["file"] = [testCase.fileName];
 
 			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration));
 
