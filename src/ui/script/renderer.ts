@@ -8,7 +8,7 @@ ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 
 	//console.log(new Date().getTime());
 	if (f.IndividualTestResults.length > 32) {
-		groupByAgain(f.IndividualTestResults, "suite");
+		convertToTreeNodes(f.IndividualTestResults, "suite");
 	}
 
 	const el = document.getElementsByTagName("x-resultstree")[0];
@@ -37,71 +37,29 @@ ipcRenderer.on("focusSearchBox", (e: Event) => {
 	searchBox.selectionEnd = searchBox.value.length;
 });
 
+/**
+ * @param testCaseOutcomes All available test results. These are what will be converted into a tree
+ * @param groupingKey The key by which to form the tree hierarchy
+ */
+function convertToTreeNodes(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): TreeNode<TestCaseOutcome>[] {
 
-function groupByAgain(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): TreeNode<TestCaseOutcome>[] {
+	// Bin every test against it's hierarchical key
+	const testsGroupedByKey = groupBy(testCaseOutcomes, groupingKey);
 
-	const binned = myGroupBy(testCaseOutcomes, "suite");
-
-	// find the shortest grouping key. that gives us our first level (the "roots", even though the root is a virtual one above that)
-	const rootDepth = binned.reduce(
+	// The groupings with the shortest keys are the roots
+	const rootDepth = testsGroupedByKey.reduce(
 		(acc, vc) => Math.min(acc, vc.key.length),
 		Number.MAX_SAFE_INTEGER);
 
-	const roots = testCaseOutcomes.filter(o => o.TestCase.groupingKeys[groupingKey].length === rootDepth);
+	const roots = testsGroupedByKey.filter(o => o.key.length === rootDepth);
 
-	// const rootNodes = roots.map(r => convertToTreeNode(r, groupingKey, testCaseOutcomes));
-
-	throw "Not implemented";
-
-}
-
-// TODO somehow build the TestCaseOutcome by merging the results of the previous run, with the results we're getting in now
-function groupBy(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): TreeNode<TestCaseOutcome>[] {
-
-	// find the shortest grouping key. that gives us our first level (the "roots", even though the root is a virtual one above that)
-	const rootDepth = testCaseOutcomes.reduce(
-		(vp, vc) => Math.min(vp, vc.TestCase.groupingKeys[groupingKey].length),
-		Number.MAX_SAFE_INTEGER);
-
-	// find all the items where the grouped key is zero elements long. these are the roots
-	const roots = testCaseOutcomes.filter(o => o.TestCase.groupingKeys[groupingKey].length === rootDepth);
-
-	const rootNodes = roots.map(r => convertToTreeNode(r, groupingKey, testCaseOutcomes));
-
+	// Convert each grouping into a treenode containing its children (the grouped items) and any sub-nodes
+	const rootNodes = roots.map(r => convertGroupingToTreeNode(r, testsGroupedByKey));
 	return rootNodes;
-	//const virtualRoot = new TreeNode<TestCaseOutcome>(null);
-
-	// const rootNodes = roots.map(o => new TreeNode<TestCaseOutcome>(o));
-
-	// TODO maybe we need to create a fake root?
-
-	// const nextLevel = testCaseOutcomes.filter(o => o.TestCase.groupingKeys[groupingKey].length === rootDepth + 1);
-
-	// // bin all of the next-levels up into the one with a matching prefix
-	// for (let i = 0; i < roots.length; i++) {
-	// 	const root = roots[i];
-	// 	const childTests = testCaseOutcomes.filter(o => isEqual(root.TestCase.groupingKeys[groupingKey], o.TestCase.groupingKeys[groupingKey]));
-	// 	const childSuites = nextLevel.filter(o => isPrefixEqual(root.TestCase.groupingKeys[groupingKey], o.TestCase.groupingKeys[groupingKey]));
-	// 	console.log(`${root.TestCase.displayName} ===> ${childTests.length} child tests (${childSuites.length} direct child suites)`);
-
-	// 	const rootNode = new TreeNode(root);
-	// 	// rootNode.children = // recurse
-	// }
-
-	// throw "Not implemented";
-
-	/*
-		groupBy their key. then hierarchicalize those bins based on subkeys?
-		groupBy is a reduce function: {key -> list<data>}
-	*/
-
 }
 
-// TODO it'd really be nice to not have to write this myself
-// TODO.... but dealing with layers of transpilation, and webpack, and module formats and bundling bullshit.....
-// Wheel reinvention is bad (and I don't want to be doing it)..... But when I just gave up trying to get that to work and just wrote the damn thing myself,
-// it took mintues, vs days
-function myGroupBy(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): {key: string[], binned: TestCaseOutcome[]}[] {
+// TODO should use lodash methods but spent too long trying to get module loaders sorted in node and browser that I wrote the thing myself
+function groupBy(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): {key: string[], binned: TestCaseOutcome[]}[] {
 
 	const result: {key: string[], binned: TestCaseOutcome[]}[] = [];
 
@@ -121,32 +79,45 @@ function myGroupBy(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): {k
 }
 
 /**
- * TODO effectively converts `me` to a treeNode representation
- * @param all Every single value, from where we pick the children to assign. TODO We *may* mutate this list as we go along, as nodes are assigned
- * @param groupingKey
+ * @param itemToConvert The grouping (a grouping key, and all its direct children - the tests) to turn into a treenode
+ * @param allItems The set of all items that will end up in the tree. Items are picked from here to slot into the hierarchy
  */
-function convertToTreeNode(me: TestCaseOutcome, groupingKey: string, all: TestCaseOutcome[]): TreeNode<TestCaseOutcome> {
-	const meMe = new TreeNode(me);
+function convertGroupingToTreeNode(itemToConvert: {key: string[], binned: TestCaseOutcome[]}, allItems: {key: string[], binned: TestCaseOutcome[]}[]): TreeNode<TestCaseOutcome> {
+	// TODO This misses gaps in the hierarchy (ie suites that contain only other suites, no tests of their own)
+	// TODO the grouping type, `{key: string[], binned: TestCaseOutcome[]}`, is a bit raw. Alias it or promote to its own type
+	const nodeTitle = itemToConvert.key[itemToConvert.key.length - 1]; // TODO for "roots" that are >1 level, this discards the upper levels
+	const convertedNode = new TreeNode(nodeTitle, itemToConvert.binned);
 
-	const myHierarchyKey = me.TestCase.groupingKeys[groupingKey];
+	const myHierarchyKey = itemToConvert.key;
 
-	const childTests = all.filter(o => isEqual(myHierarchyKey, o.TestCase.groupingKeys[groupingKey]));
-	const nextLevel = all.filter(o => o.TestCase.groupingKeys[groupingKey].length === myHierarchyKey.length + 1);
-	const childSuites = nextLevel.filter(o => isPrefixEqual(myHierarchyKey, o.TestCase.groupingKeys[groupingKey]));
+	// Groupings that are beneath this one (same prefix), but one level down
+	const childGroupings = allItems
+		.filter(o => isPrefixEqual(myHierarchyKey, o.key))
+		.filter(o => o.key.length === myHierarchyKey.length + 1);
 
-	const childrenNodes = childSuites.map(s => convertToTreeNode(s, groupingKey, all));
-	meMe.children = childrenNodes;
+	const childNodes = childGroupings.map(s => convertGroupingToTreeNode(s, allItems));
+	convertedNode.children = childNodes;
 
-	return meMe;
+	// Cascade up the status so that any failed children show up as red on the parent nodes too
+	if (childNodes.some(n => n.status === "Failed") || itemToConvert.binned.some(t => t.Result === "Failed")) {
+		convertedNode.status = "Failed";
+	}
+	else {
+		convertedNode.status = "Passed";
+	}
+
+	return convertedNode;
 }
 
-function isPrefixEqual(prefix: string[], p2: string[]): boolean {
-	var p2prefix = p2.slice(0, prefix.length);
-	return isEqual(prefix, p2prefix);
+/**
+ * Tests if @param testedKey begins with @param prefix
+ */
+function isPrefixEqual(prefix: string[], testedKey: string[]): boolean {
+	const testedKeyPrefix = testedKey.slice(0, prefix.length);
+	return isEqual(prefix, testedKeyPrefix);
 }
 
-// TODO use lodash helpful methods if can get these damn module loaders sorted
-// otherwise it's just easiet to reinvent every wheel
+// TODO should use lodash methods but spent too long trying to get module loaders sorted in node and browser that I wrote the thing myself
 function isEqual(p1: string[], p2: string[]): boolean {
 
 	if (p1.length !== p2.length) {
@@ -163,12 +134,11 @@ function isEqual(p1: string[], p2: string[]): boolean {
 }
 
 export class TreeNode<T> {
-	public title: string;
 	public status: TestStatus;
 	public failureInfo: string | null;
 
 	public children: TreeNode<T>[];
 
-	public constructor(public data: T) {
+	public constructor(public title: string, public data: T[]) {
 	}
 }

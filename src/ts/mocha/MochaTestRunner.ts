@@ -1,7 +1,6 @@
 import { ITestRunner } from '../logic/ITestRunner';
 import { LitmusContext } from '../types/LitmusContext';
 import { TestRun } from '../types/TestRun';
-import * as Mocha from 'mocha';
 import { ITest } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
@@ -11,6 +10,8 @@ import * as Path from 'path';
 import { Directory } from '../../../lib/LibFs/Fs';
 //import "../../typings/mocha"; - works, but is emitted in the JS and breaks running under Node
 import { TestStatus } from '../types/TestStatus';
+import Module = require('module');
+import Mocha = require('mocha');
 
 export class MochaTestRunner implements ITestRunner {
 
@@ -32,9 +33,7 @@ export class MochaTestRunner implements ITestRunner {
 		const jsFiles = this._directory.getFilesRecursive()
 			.filter(f => f.name.fullName.toLowerCase().endsWith(".js")); // TODO exclude node_modules ??????? Which means we have to do directory separators
 		jsFiles.forEach(f => {
-			// https://github.com/mochajs/mocha/issues/3084
-			// TODO may have to watch package.json in case any deps get updated and blat the cache entirely
-			delete require.cache[f.fullPath];
+			this.uncache(f.fullPath);
 			mocha.addFile(f.fullPath);
 		});
 
@@ -71,6 +70,20 @@ export class MochaTestRunner implements ITestRunner {
 			const testRun = new TestRun(allResults, pct);
 			observer.next(testRun);
 		});
+	}
+
+	private uncache(filepath: string) {
+		// https://github.com/mochajs/mocha/issues/3084
+		// TODO may have to watch package.json in case any deps get updated and blat the cache entirely
+
+		// TODO depending where this is run - node, browser via requireJs, browser via parcelJs - these things are or are not available
+
+		if (require && require.cache) {
+			delete require.cache[filepath];
+		}
+		else {
+			delete (Module as any)._cache[filepath];
+		}
 	}
 
 	private getTestStatus(test: ITest): TestStatus {

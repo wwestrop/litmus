@@ -18,7 +18,7 @@ function initMainWindow() {
 
 	initMainMenu();
 
-	backgroundWorker = new BrowserWindow({show: devMode});
+	backgroundWorker = new BrowserWindow({show: devMode, closable: false});
 	backgroundWorker.loadURL(`file://${__dirname}/ui/backgroundTestRunnerWorker.html`);
 
 	mainWindow = new BrowserWindow({
