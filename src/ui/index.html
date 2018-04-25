@@ -69,8 +69,8 @@
 				<input type="radio" name="testStatusFilter" id="rStatusFilterSkipped" /><label for="rStatusFilterSkipped">Skipped</label>
 			</x-buttonGroup>
 			&nbsp;&nbsp;&nbsp;
-			<span>Group by:&nbsp;</span> <select>
-				<option value=""></option>
+			<span>Group by:&nbsp;</span> <select id="groupByDropdown">
+				<option value=""></option> <!-- TODO grouping by nothing (ie a flat list) not supported right now -->
 				<option value="File">File</option>
 				<option value="Test outcome">Test outcome</option>
 				<option value="Execution time">Execution time</option>
@@ -94,6 +94,14 @@
 
 <script>
 	require('./script/renderer.js');
+</script>
+
+<script type="text/javascript">
+	// TODO handle this node expansion in React, probably, not directly via the DOM
+	function onNodeClick(nodeElement) {
+		nodeElement.classList.toggle("expanded");
+		event.stopPropagation();
+	}
 </script>
 
 </html>

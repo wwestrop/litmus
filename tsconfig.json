@@ -17,7 +17,8 @@
         // "noUnusedParameters": true,
         "strictNullChecks": true,
         "pretty": true,
-        "outDir": "bin"
+        "outDir": "bin",
+        "jsx": "react"
     },
     "include": [
         "src/**/*.ts",

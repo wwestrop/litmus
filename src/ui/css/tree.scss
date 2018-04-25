@@ -1,0 +1,94 @@
+x-resultsTree {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	width: 100%;
+	display: block;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding: 20px 8px 8px 8px;
+}
+
+x-node {
+	padding-left: 16px;
+	display: block;
+	overflow-x: auto;
+	overflow-y: hidden;
+	min-height: 24px;
+	transition: height 0.15s; /* TODO doesn't work because of auto-values */
+	height: 24px;
+	font-size: 11pt;
+}
+
+x-nodeHeader {
+	height: 24px;
+	line-height: 24px;
+	display: block;
+	position: relative;
+	/*left: -16px; To counteract the padding that is meant for the content */
+	overflow: hidden;
+}
+
+x-nodeDetails {
+	display: block;
+	background-color: #413F57;
+	padding-left: 56px;
+	font-size: 10pt;
+}
+
+x-node.expanded {
+	height: auto;
+}
+
+x-node > x-nodeHeader > x-twistie {
+	visibility: hidden;
+	display: block;
+	height: 24px;
+	width: 24px;
+	transition: transform 0.15s;
+	position: absolute;
+	top: 0;
+	left: 0;
+	text-align: center;
+	background-image: url('../img/twistie.svg');
+}
+
+x-node.expandable > x-nodeHeader > x-twistie {
+	visibility: visible;
+}
+
+x-node.expandable.expanded > x-nodeHeader > x-twistie {
+	transform: rotate(90deg);
+}
+
+x-node > x-nodeHeader > x-statusIcon {
+	display: block;
+	height: 18px;
+	width: 18px;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	position: absolute;
+	top: 3px;
+	left: 24px;
+}
+
+x-node.failed > x-nodeHeader {
+	color: #FE4E4E;
+}
+
+x-node.failed > x-nodeHeader > x-statusIcon {
+	background-image: url('../../../res/failBadge.png');
+}
+
+.passed > x-nodeHeader > x-statusIcon {
+	background-image: url('../../../res/passBadge.png');
+}
+
+x-node > x-nodeHeader > x-nodeTitle {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 48px;
+	height: 24px;
+}
