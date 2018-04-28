@@ -14,15 +14,17 @@ interface INode {
 	nodeData: TreeNode<TestCaseOutcome> | TestCaseOutcome;
 }
 
-// declare module JSX {
-// 	interface IntrinsicElements {
-// 		"x-node": any;
-// 		"x-nodeHeader": any;
-// 		"x-twistie": any;
-// 		"x-statusIcon": any;
-// 		"nodeTitle": any;
-// 	}
-// }
+declare global {
+	module JSX {
+		interface IntrinsicElements {
+			"x-node": any;
+			"x-nodeHeader": any;
+			"x-twistie": any;
+			"x-statusIcon": any;
+			"x-nodeTitle": any;
+		}
+	}
+}
 
 class TreeTopLevel extends React.Component<ITreeTopLevel> {
 	render() {
@@ -41,9 +43,9 @@ class Node extends React.Component<INode> {
 		const nodeTitle = isSuite(this.props.nodeData) ? this.props.nodeData.title : this.props.nodeData.TestCase.displayName;
 
 		// TODO - ICK! NESTED TERNARIES! MY EYES!!!! Again - rectify naming inconsistencies
-		const nodeStatus = isSuite(this.props.nodeData)
-			? (this.props.nodeData.status === "Passed" ? "passed" : "failed") 
-			: (this.props.nodeData.Result === "Passed" ? "passed" : "failed");
+		const nodeStatus = isSuite(this.props.nodeData)         // TODO - do better than lowercasing a fixed string, make it consistent across things
+			? (this.props.nodeData.status.toLowerCase())        // sub-folders in the view (which contain more tests themselves)
+			: (this.props.nodeData.Result.toLowerCase());       // individual tests
 		//const mappedThing = this.props.nodeData.children || [];
 		const cssClassName = `${nodeStatus} expanded ${isSuite(this.props.nodeData) ? "expandable" : ""}`;
 

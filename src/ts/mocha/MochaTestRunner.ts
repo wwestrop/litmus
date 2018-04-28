@@ -52,14 +52,14 @@ export class MochaTestRunner implements ITestRunner {
 
 			const testCase = new TestCase();
 			testCase.displayName = t.title;
-			testCase.hierarchy = this.constructHierarchy(t);
-			testCase.fileName = t.file || ""; // TODO support frameworks that don't give us the file
+			const hierarchy = this.constructHierarchy(t);
+			const fileName = t.file || ""; // TODO support frameworks that don't give us the file
 			// TODO make "attaching bits of metadata" to the test case a more generic thing
 			// TODO so we can group testsarbitrarily (depending as the framework supports)
 
 			// TODO remove the redundant fields - `groupingKeys` is a generic way of supporting whatever a framework might support
-			testCase.groupingKeys["suite"] = testCase.hierarchy;
-			testCase.groupingKeys["file"] = [testCase.fileName];
+			testCase.groupingKeys["suite"] = hierarchy;
+			testCase.groupingKeys["file"] = [fileName];
 
 			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration));
 

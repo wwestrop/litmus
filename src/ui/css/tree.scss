@@ -1,3 +1,5 @@
+@import 'shell.scss';
+
 x-resultsTree {
 	position: absolute;
 	left: 0;
@@ -7,7 +9,8 @@ x-resultsTree {
 	display: block;
 	overflow-y: scroll;
 	overflow-x: hidden;
-	padding: 20px 8px 8px 8px;
+	padding: 12px 4px 4px 4px;
+	font-weight: normal;
 }
 
 x-node {
@@ -75,14 +78,23 @@ x-node > x-nodeHeader > x-statusIcon {
 
 x-node.failed > x-nodeHeader {
 	color: #FE4E4E;
+	font-weight: bold;
+}
+
+x-node.skipped > x-nodeHeader {
+	color: rgba($textOnBackgroundColour, 0.45); // dimmed out version of the usual text colour
 }
 
 x-node.failed > x-nodeHeader > x-statusIcon {
 	background-image: url('../../../res/failBadge.png');
 }
 
-.passed > x-nodeHeader > x-statusIcon {
+x-node.passed > x-nodeHeader > x-statusIcon {
 	background-image: url('../../../res/passBadge.png');
+}
+
+x-node.skipped > x-nodeHeader > x-statusIcon {
+	background-image: url('../../../res/skipBadge.png');
 }
 
 x-node > x-nodeHeader > x-nodeTitle {

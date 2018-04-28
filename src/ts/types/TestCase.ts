@@ -6,17 +6,9 @@ export class TestCase {
 	// or copy everything at that point
 	// BUT - if I keep them distinct, it means some code to map the results back against the cases list
 	public displayName: string;
-	public childTestCases: TestCase[] = [];
-
-	/** Hierarchical organisation of the test, eg by suites and nested suites, by file, etc, as depending on
-	 *  what the framework supports */
-	public hierarchy: string[];
 
 	/** An associative array of all the fields supported by a test runner frameowrk,
 	 *  of which the tests can be grouped in the UI. May be hierarchical (ie a list of strings) */
 	// public groupingKeys: {[groupingField: string]: string[] | string; } = {};
 	public groupingKeys: {[groupingField: string]: string[]} = {};
-
-	/** The file which the test case came from */
-	public fileName: string;
 }
