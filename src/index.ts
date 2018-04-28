@@ -71,14 +71,16 @@ function initMainWindow() {
 function initMainMenu() {
 	const menu = new Menu();
 
-	menu.append(new MenuItem({
-		label: "DevTools",
-		accelerator: "F12",
-		click: () => {
-			mainWindow.webContents.toggleDevTools();
-			backgroundWorker.webContents.toggleDevTools();
-		}
-	}));
+	if (devMode) {
+		menu.append(new MenuItem({
+			label: "DevTools",
+			accelerator: "F12",
+			click: () => {
+				mainWindow.webContents.toggleDevTools();
+				backgroundWorker.webContents.toggleDevTools();
+			}
+		}));
+	}
 	menu.append(new MenuItem({
 		label: "Search",
 		accelerator: "F2",
