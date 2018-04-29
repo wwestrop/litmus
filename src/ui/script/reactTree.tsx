@@ -1,5 +1,5 @@
-// import ReactDOM from 'react-dom';
-// import React from 'react';
+// tslint:disable:no-any A lot of the `any`s are just for framework code, where I might not have or care about a type
+
 import ReactDOM = require('react-dom');
 import React = require('react');
 import { TreeNode } from './renderer';
@@ -12,6 +12,10 @@ interface ITreeTopLevel {
 
 interface INode {
 	nodeData: TreeNode<TestCaseOutcome> | TestCaseOutcome;
+}
+
+interface INodeState {
+	expanded: boolean;
 }
 
 declare global {
@@ -37,7 +41,16 @@ class TreeTopLevel extends React.Component<ITreeTopLevel> {
 }
 
 // TODO why typescript wanted the return type here for `render`, but not above??????
-class Node extends React.Component<INode> {
+class Node extends React.Component<INode, INodeState> {
+
+	constructor(props: INode, context?: any) {
+		super(props, context);
+
+		this.state = {
+			expanded: true,
+		};
+	}
+
 	render(): React.ReactNode { // TODO Give each node a unique key. Applies to the namespaces (groupings) too
 
 		const nodeTitle = isSuite(this.props.nodeData) ? this.props.nodeData.title : this.props.nodeData.TestCase.displayName;
@@ -46,12 +59,12 @@ class Node extends React.Component<INode> {
 		const nodeStatus = isSuite(this.props.nodeData)         // TODO - do better than lowercasing a fixed string, make it consistent across things
 			? (this.props.nodeData.status.toLowerCase())        // sub-folders in the view (which contain more tests themselves)
 			: (this.props.nodeData.Result.toLowerCase());       // individual tests
-		//const mappedThing = this.props.nodeData.children || [];
-		const cssClassName = `${nodeStatus} expanded ${isSuite(this.props.nodeData) ? "expandable" : ""}`;
+
+		const cssClassName = `${nodeStatus} ${this.state.expanded ? "expanded" : ""} ${isSuite(this.props.nodeData) ? "expandable" : ""}`;
 
 		return (
-			<x-node class={cssClassName} onclick="onNodeClick(this)">
-				<x-nodeHeader>
+			<x-node class={cssClassName}>
+				<x-nodeHeader onClick={(e: React.SyntheticEvent<any>) => this.onNodeClick(e)}>
 					<x-twistie />
 					<x-statusIcon />
 					<x-nodeTitle>{nodeTitle}</x-nodeTitle>
@@ -62,6 +75,11 @@ class Node extends React.Component<INode> {
 				{isSuite(this.props.nodeData) ? this.props.nodeData.data.map(test => <Node nodeData={test} />) : []}
 			</x-node>
 		);
+	}
+
+	onNodeClick(e: React.SyntheticEvent<any>) {
+		this.setState((prev: INodeState, props: INode) => ({expanded: !prev.expanded}));
+		e.stopPropagation();
 	}
 }
 
