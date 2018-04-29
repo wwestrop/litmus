@@ -33,22 +33,29 @@ function convertToTreeNodes(testCaseOutcomes: TestCaseOutcome[], groupingKey: st
 	// Bin every test against it's hierarchical key
 	const testsGroupedByKey = groupBy(testCaseOutcomes, groupingKey);
 
-	// The groupings with the shortest keys are the roots
-	const rootDepth = testsGroupedByKey.reduce(
-		(acc, vc) => Math.min(acc, vc.key.length),
-		Number.MAX_SAFE_INTEGER);
-
-	const roots = testsGroupedByKey.filter(o => o.key.length === rootDepth);
+	// This should all be shoved off into a testable class anyway, when I have a better idea what I'm doing.......
+	// But testing every test against every other test => cartesian product
+	const roots = findRoots(testsGroupedByKey);
 
 	// Convert each grouping into a treenode containing its children (the grouped items) and any sub-nodes
 	const rootNodes = roots.map(r => convertGroupingToTreeNode(r, testsGroupedByKey));
 	return rootNodes;
 }
 
-// TODO should use lodash methods but spent too long trying to get module loaders sorted in node and browser that I wrote the thing myself
-function groupBy(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): {key: string[], binned: TestCaseOutcome[]}[] {
+function findRoots(fromList: Grouping<TestCaseOutcome>[]): Grouping<TestCaseOutcome>[] {
+	// Each grouping for which there does not exist another having a key that is shorter, but otherwise has the same prefix
 
-	const result: {key: string[], binned: TestCaseOutcome[]}[] = [];
+	// TODO analyse if I can cut out the filter for shorter keys - if I made isPrefix do this job (ie would that break anything else)
+	// TODO the logic made sense when I wrote it, but it's IMMEDIATELY difficult to read back
+	return fromList.filter(c => !fromList.filter(i => i.key.length < c.key.length).some(a => isPrefixEqual(a.key, c.key)));
+}
+
+type Grouping<T> = {key: string[], binned: T[]};
+
+// TODO should use lodash methods but spent too long trying to get module loaders sorted in node and browser that I wrote the thing myself
+function groupBy(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): Grouping<TestCaseOutcome>[] {
+
+	const result: Grouping<TestCaseOutcome>[] = [];
 
 	for (const test of testCaseOutcomes) {
 		const thisKey = test.TestCase.groupingKeys[groupingKey];
@@ -69,9 +76,8 @@ function groupBy(testCaseOutcomes: TestCaseOutcome[], groupingKey: string): {key
  * @param itemToConvert The grouping (a grouping key, and all its direct children - the tests) to turn into a treenode
  * @param allItems The set of all items that will end up in the tree. Items are picked from here to slot into the hierarchy
  */
-function convertGroupingToTreeNode(itemToConvert: {key: string[], binned: TestCaseOutcome[]}, allItems: {key: string[], binned: TestCaseOutcome[]}[]): TreeNode<TestCaseOutcome> {
+function convertGroupingToTreeNode(itemToConvert: Grouping<TestCaseOutcome>, allItems: Grouping<TestCaseOutcome>[]): TreeNode<TestCaseOutcome> {
 	// TODO This misses gaps in the hierarchy (ie suites that contain only other suites, no tests of their own)
-	// TODO the grouping type, `{key: string[], binned: TestCaseOutcome[]}`, is a bit raw. Alias it or promote to its own type
 	const nodeTitle = itemToConvert.key[itemToConvert.key.length - 1]; // TODO for "roots" that are >1 level, this discards the upper levels
 	const convertedNode = new TreeNode(nodeTitle, itemToConvert.binned);
 
