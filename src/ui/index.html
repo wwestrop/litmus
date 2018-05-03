@@ -78,7 +78,7 @@
 				<option value="Class/Namespace">Class/Namespace</option>
 			</select>
 			&nbsp;&nbsp;&nbsp;
-			<input id="tests-searchbox" type="search" />
+			<input id="tests-searchbox" type="search" value="Type to search…" class="placeholder"/ >
 		</x-filterBar>
 
 
@@ -93,5 +93,30 @@
 </body>
 
 <script src="./script/renderer.ts"></script>
+
+<script>
+
+	(function configureSearchBox() {
+		const placeholderText = "Type to search…";
+		const searchbox = document.getElementById('tests-searchbox');
+
+		searchbox.onblur = function () {
+			if (searchbox.value === "") {
+				searchbox.value = placeholderText;
+				searchbox.classList.toggle("placeholder");
+			}
+		};
+
+		searchbox.onfocus = function() {
+			
+			if (searchbox.value === placeholderText) {
+				searchbox.value = "";
+				searchbox.classList.toggle("placeholder");
+			}
+		};
+	}());
+
+	
+</script>
 
 </html>

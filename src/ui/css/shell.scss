@@ -368,6 +368,11 @@ input[type="search"] {
 	border-radius: 99999px;
 	padding: 3px 10px 3px 10px;
 	border: 1px solid #444;
+
+	&.placeholder {
+		color: #bbb;
+		font-style: italic;
+	}
 }
 
 x-markerBanner {

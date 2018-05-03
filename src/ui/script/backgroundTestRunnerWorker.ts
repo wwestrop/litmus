@@ -52,6 +52,10 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 				`We couldn't find any tests in "${ex.directory.name}", or we don't have support for your testing framework yet.`);
 		}
 		else {
+			console.error(ex);
+			remote.dialog.showErrorBox(
+				"Error",
+				"An unhandled error occurred while running tests. See log for details. ");
 			throw ex;
 		}
 	}

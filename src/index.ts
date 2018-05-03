@@ -5,6 +5,7 @@ import { MochaTestAdapter } from "./ts/mocha/MochaTestAdapter";
 import { TestsNotDiscoveredException } from './ts/exceptions/TestsNotDiscoveredException';
 import { prototype } from "events";
 import * as Path from 'path';
+import { TestRun } from './ts/types/TestRun';
 
 /*export*/ let mainWindow: BrowserWindow; // so other processes can poke at it (eg when runner has sth to report, poke in a message via its webcontents, set its progressbar from the main thread - shoulg that win be responsible for setting its own progress? probably. would invilve an extra RPC call though)
 let backgroundWorker: BrowserWindow;
@@ -134,14 +135,17 @@ ipcMain.on("setProgressBar", (e: Event, progress: number, progbarState: Electron
 // to communciate from a hidden processing window to the main window
 ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
 
+	// TODO to avoid lots of parsing and serialisation on large test runs - ship off to the UI only the latest test run??
+
+	const failed = (<any>testrunJson).IndividualTestResults.some((r: any) => r.Result === "Failed");
+
 	// TODO sort the paths out for dist
-	// TODO deserialise to determine if pass or fail
-	const overlayIcon = Path.resolve("src/ui/failBadge.png");
+	const overlayIcon = failed ? Path.resolve("res/failBadge.png") : Path.resolve("res/passBadge.png");
 
 	// TODO create the nativeimages once and store them
 	mainWindow.setOverlayIcon(
 		nativeImage.createFromPath(overlayIcon),
-		"Tests passed");
+		"Tests passed"); // TODO
 
 	mainWindow.webContents.send("update-test-results", testrunJson); // TODO not sync - out of order messages?
 });
