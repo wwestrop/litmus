@@ -4,3 +4,4 @@
 *.map
 /**/.sass-cache/*
 bin/
+dist/

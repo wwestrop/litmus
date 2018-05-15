@@ -1,0 +1,9 @@
+{
+	"productName": "Litmus",
+	"directories": {
+		"output": "../../dist"
+	},
+	"win": {
+		"icon": "../../res/Litmus.ico"
+	}
+}
