@@ -13,6 +13,8 @@ ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 	lastRunResults = f;
 
 	if (f.IndividualTestResults.length === 1) { // TODO done to avoid unnecessarily re-doing this step; find a nicer way
+		LitmusDom.groupByDropDown.onchange = null;
+
 		const keys = getAvailableGroupingKeys(f.IndividualTestResults);
 		LitmusDom.groupByDropDown.innerHTML = ""; // TODO people can't agree on what method is faster. Benchmark myself, if it proves an issue
 		keys.forEach(k => {
@@ -24,6 +26,9 @@ ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 
 		const selectedGroupingKey = getDesiredGroupingKey(f.IndividualTestResults);
 		LitmusDom.groupByDropDown.value = selectedGroupingKey;
+
+		// reattach handler. TODO yuck
+		LitmusDom.groupByDropDown.onchange = onGroupingChanged;
 	}
 
 	pushTestState();
@@ -245,6 +250,14 @@ export class TreeNode<T> {
 }
 
 
+export function onGroupingChanged (this: HTMLElement, a: Event): any {
+	pushTestState();
+}
+
+
+
+
+
 /** Abstraction over the UI */
 // TODO rather than grabbing something out the DOM, probably should make the /ENTIRE/ UI in React
 abstract class LitmusDom {
@@ -270,3 +283,10 @@ abstract class LitmusDom {
 		return null;
 	}
 }
+
+
+
+// Since DOM code can't reach in to this module (can't it? is there a way?) and refer to the event handlers,
+// we reach the other way, to the DOM, and set them ourselves
+const el = LitmusDom.groupByDropDown;
+el.onchange = onGroupingChanged;
