@@ -42,6 +42,8 @@ ipcRenderer.on("dev-reset", (e: Event) => {
 
 ipcRenderer.on("focusSearchBox", (e: Event) => {
 	LitmusDom.searchBox.focus();
+	LitmusDom.searchBox.selectionStart = 0;
+	LitmusDom.searchBox.selectionEnd = LitmusDom.searchBox.value.length;
 });
 
 /**
@@ -180,14 +182,23 @@ function isEqual(p1: string[], p2: string[]): boolean {
  * this function is invoked to update the display
  */
 function pushTestState() {
-
 	const selectedGroupingKey = LitmusDom.groupByDropDown.value;
 
-	const filtered = lastRunResults!.IndividualTestResults; // TODO nulls! anys!
+	const convertedForReact = convertToTreeNodes(lastRunResults!.IndividualTestResults, selectedGroupingKey);
 
-	const convertedForReact = convertToTreeNodes(filtered, selectedGroupingKey);
+	let filtered: TreeNode<TestCaseOutcome>[] = convertedForReact;
+	const searchFilter = LitmusDom.getSearchText();
+	if (searchFilter !== null) {
+		// TODO search any grouping key, not just the one shown???
+		// TODO. The "roots" can now end up excluded from the resultset - meaning when filling in the gaps from leaf -> root.....
+		// TODO We find a root closer than we otherwise would, leading to things being "hoiked up" the hierarchy
+		// TODO - filter *out* the test results after we've already constructed the tree?????
+		// TODO also has an impact in that the "group" appears as "passed", if all the failures have been filtered out
+		// filtered = filtered.filter(r => r.TestCase.groupingKeys[selectedGroupingKey].join(" ").includes(searchFilter) || r.TestCase.displayName.includes(searchFilter)); // TODO nulls! anys!
+		filtered = filterTree(filtered, getFilterFunc());
+	}
 
-	reactTree.render(convertedForReact);
+	reactTree.render(filtered);
 }
 
 function getSelectedGroupingKey(): string {
@@ -250,11 +261,53 @@ export class TreeNode<T> {
 }
 
 
-export function onGroupingChanged (this: HTMLElement, a: Event): any {
+function onGroupingChanged (this: HTMLElement, a: Event): any {
 	pushTestState();
 }
 
+/** Looks at the options on the UI and returns a function, that, when applied over a test,
+ *  determines if that test should be visible, given the UI options selected.
+ */
+function getFilterFunc(): (t: TestCaseOutcome) => boolean {
 
+	const identityFunction = (t: TestCaseOutcome) => true;
+
+	const searchText = LitmusDom.getSearchText(); // TODO already tolower'ed - make the more explicit
+	if (searchText) {
+		return (t: TestCaseOutcome) => {
+			// TODO this assumes these two grouping keys always present, on every testrunner framework
+			// TODO also assumes we want to fitler on everything, even if it may not be visible on screen. Do we?
+			return t.TestCase.displayName.toLowerCase().includes(searchText)
+				|| t.TestCase.groupingKeys["File"].some(k => k.toLowerCase().includes(searchText))
+				|| t.TestCase.groupingKeys["Suite"].some(k => k.toLowerCase().includes(searchText));
+		};
+	}
+	else {
+		return identityFunction;
+	}
+}
+
+
+function filterTree<T>(tree: TreeNode<T>[], filterFunc: (t: T) => boolean): TreeNode<T>[] {
+	// TODO this filters out all the tests. Need to remove any nodes where all their children have been filtered out
+	return tree.map(t => filterNode(t, filterFunc));
+}
+
+function filterNode<T>(node: TreeNode<T>, filterFunc: (t: T) => boolean): TreeNode<T> {
+	// Clone existing node
+	const newNode = new TreeNode<T>(node.title, []);
+	newNode.status = node.status;
+	newNode.children = [];
+	newNode.failureInfo = node.failureInfo;
+
+	// Filter data (tests at this level)
+	newNode.data = node.data.filter(filterFunc);
+
+	// Recurse down to children
+	newNode.children = node.children.map(c => filterNode(c, filterFunc));
+
+	return newNode;
+}
 
 
 
@@ -274,7 +327,7 @@ abstract class LitmusDom {
 			return null;
 		}
 		else {
-			return text;
+			return text.toLowerCase().trim();
 		}
 	}
 
