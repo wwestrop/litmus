@@ -183,6 +183,10 @@ x-toolbar {
 			z-index: 4000;
 		}
 
+		input[type="radio"]:disabled + label {
+			opacity: 0.3;
+		}
+
 		input[type="radio"]:checked + label::after {
 			content: '';
 			display: block;

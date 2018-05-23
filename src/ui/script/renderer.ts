@@ -69,7 +69,7 @@ function convertToTreeNodes(testCaseOutcomes: TestCaseOutcome[], groupingKey: st
 	for (const r of leavesByRoot) {
 		for (const l of r.leaves) {
 			// Walk back up from each leaf to its root, insert empty grouping bins if necessary so the hierarchy has no gaps
-			for (let i = r.leaves.length - 1; i > r.rootKey.length; i--) {
+			for (let i = l.length - 1; i > r.rootKey.length; i--) {
 				const subkey = l.slice(0, i);
 				if (!testsGroupedByKey.some(a => isEqual(a.key, subkey))) {
 					testsGroupedByKey.push({ key: subkey, binned: [] });
