@@ -265,6 +265,10 @@ function onGroupingChanged (this: HTMLElement, a: Event): any {
 	pushTestState();
 }
 
+function onSearchChanged (this: HTMLElement, a: Event): any {
+	pushTestState();
+}
+
 /** Looks at the options on the UI and returns a function, that, when applied over a test,
  *  determines if that test should be visible, given the UI options selected.
  */
@@ -289,8 +293,15 @@ function getFilterFunc(): (t: TestCaseOutcome) => boolean {
 
 
 function filterTree<T>(tree: TreeNode<T>[], filterFunc: (t: T) => boolean): TreeNode<T>[] {
-	// TODO this filters out all the tests. Need to remove any nodes where all their children have been filtered out
-	return tree.map(t => filterNode(t, filterFunc));
+	// Filter out all the tests. Need to remove any nodes where all their children have been filtered out
+	const filtered = tree.map(t => filterNode(t, filterFunc));
+
+	// This can leave useless branches on the tree, which now have nothnig in them - clean this up
+	const fakeRoot = new TreeNode<T>("", []);
+	fakeRoot.children = filtered;
+	pruneTree(fakeRoot);
+	return fakeRoot.children;
+	// TODO dealing with unrooted tree sligthly awkward (it's really a collection of root-level trees)
 }
 
 function filterNode<T>(node: TreeNode<T>, filterFunc: (t: T) => boolean): TreeNode<T> {
@@ -308,6 +319,21 @@ function filterNode<T>(node: TreeNode<T>, filterFunc: (t: T) => boolean): TreeNo
 
 	return newNode;
 }
+
+
+/** Removes the child nodes from this treeNode where there are no tests anywhere down the hierarchy
+ *  (as can happen when tests have been filtered out by the user's filter choices) */
+function pruneTree<T>(node: TreeNode<T>): void {
+	node.children.map(c => pruneTree(c));
+	node.children = node.children.filter(c => c.children.length > 0 || c.data.length > 0);
+}
+
+function hasDescendants<T>(node: TreeNode<T>): boolean {
+	return node.children.every(c => hasDescendants(c))
+		&& node.data.length > 0;
+}
+
+
 
 
 
@@ -341,5 +367,5 @@ abstract class LitmusDom {
 
 // Since DOM code can't reach in to this module (can't it? is there a way?) and refer to the event handlers,
 // we reach the other way, to the DOM, and set them ourselves
-const el = LitmusDom.groupByDropDown;
-el.onchange = onGroupingChanged;
+LitmusDom.groupByDropDown.onchange = onGroupingChanged;
+LitmusDom.searchBox.oninput = onSearchChanged;
