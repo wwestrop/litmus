@@ -186,17 +186,7 @@ function pushTestState() {
 
 	const convertedForReact = convertToTreeNodes(lastRunResults!.IndividualTestResults, selectedGroupingKey);
 
-	let filtered: TreeNode<TestCaseOutcome>[] = convertedForReact;
-	const searchFilter = LitmusDom.getSearchText();
-	if (searchFilter !== null) {
-		// TODO search any grouping key, not just the one shown???
-		// TODO. The "roots" can now end up excluded from the resultset - meaning when filling in the gaps from leaf -> root.....
-		// TODO We find a root closer than we otherwise would, leading to things being "hoiked up" the hierarchy
-		// TODO - filter *out* the test results after we've already constructed the tree?????
-		// TODO also has an impact in that the "group" appears as "passed", if all the failures have been filtered out
-		// filtered = filtered.filter(r => r.TestCase.groupingKeys[selectedGroupingKey].join(" ").includes(searchFilter) || r.TestCase.displayName.includes(searchFilter)); // TODO nulls! anys!
-		filtered = filterTree(filtered, getFilterFunc());
-	}
+	const filtered = filterTree(convertedForReact, filterTest);
 
 	reactTree.render(filtered);
 }
@@ -269,26 +259,33 @@ function onSearchChanged (this: HTMLElement, a: Event): any {
 	pushTestState();
 }
 
-/** Looks at the options on the UI and returns a function, that, when applied over a test,
- *  determines if that test should be visible, given the UI options selected.
- */
-function getFilterFunc(): (t: TestCaseOutcome) => boolean {
-
-	const identityFunction = (t: TestCaseOutcome) => true;
+/** Looks at the options on the UI and determines if a given test should be visible, given the options selected. */
+function filterTest(t: TestCaseOutcome): boolean {
+	let result = true;
 
 	const searchText = LitmusDom.getSearchText(); // TODO already tolower'ed - make the more explicit
 	if (searchText) {
-		return (t: TestCaseOutcome) => {
+		const textSearchFunction = (t: TestCaseOutcome) => {
 			// TODO this assumes these two grouping keys always present, on every testrunner framework
 			// TODO also assumes we want to fitler on everything, even if it may not be visible on screen. Do we?
 			return t.TestCase.displayName.toLowerCase().includes(searchText)
 				|| t.TestCase.groupingKeys["File"].some(k => k.toLowerCase().includes(searchText))
 				|| t.TestCase.groupingKeys["Suite"].some(k => k.toLowerCase().includes(searchText));
 		};
+
+		result = result && textSearchFunction(t);
 	}
-	else {
-		return identityFunction;
+
+	const statusFilter = LitmusDom.getStatusFilter();
+	if (statusFilter) {
+		const statusFilterFunction = (t: TestCaseOutcome) => {
+				return t.Result === statusFilter;
+		};
+
+		result = result && statusFilterFunction(t);
 	}
+
+	return result;
 }
 
 
@@ -344,6 +341,11 @@ abstract class LitmusDom {
 	public static readonly groupByDropDown = document.getElementById("groupByDropdown")! as HTMLSelectElement;
 	public static readonly searchBox = document.getElementById("tests-searchbox")! as HTMLInputElement;
 
+	public static readonly filterAll = document.getElementById("rStatusFilterAll")! as HTMLInputElement;
+	public static readonly filterPassed = document.getElementById("rStatusFilterPassed")! as HTMLInputElement;
+	public static readonly filterFailed = document.getElementById("rStatusFilterFailed")! as HTMLInputElement;
+	public static readonly filterSkipped = document.getElementById("rStatusFilterSkipped")! as HTMLInputElement;
+
 	private static readonly placeholder: string ="Type to search…"; // TODO really should embed in component. CBA right now
 
 	public static getSearchText(): string | null {
@@ -357,9 +359,19 @@ abstract class LitmusDom {
 		}
 	}
 
-	public getStatusFilter(): TestStatus | null {
-		// TODO
-		return null;
+	public static getStatusFilter(): TestStatus | null {
+		if (LitmusDom.filterAll.checked) {
+			return null;
+		}
+		else if (LitmusDom.filterPassed.checked) {
+			return "Passed";
+		}
+		else if (LitmusDom.filterFailed.checked) {
+			return "Failed";
+		}
+		else {
+			return "Skipped";
+		}
 	}
 }
 
@@ -369,3 +381,7 @@ abstract class LitmusDom {
 // we reach the other way, to the DOM, and set them ourselves
 LitmusDom.groupByDropDown.onchange = onGroupingChanged;
 LitmusDom.searchBox.oninput = onSearchChanged;
+LitmusDom.filterAll.onchange = onSearchChanged;
+LitmusDom.filterPassed.onchange = onSearchChanged;
+LitmusDom.filterFailed.onchange = onSearchChanged;
+LitmusDom.filterSkipped.onchange = onSearchChanged;
