@@ -26,6 +26,7 @@ declare global {
 			"x-twistie": any;
 			"x-statusIcon": any;
 			"x-nodeTitle": any;
+			"x-nodeDetails": any;
 		}
 	}
 }
@@ -61,14 +62,25 @@ class Node extends React.Component<INode, INodeState> {
 			: (this.props.nodeData.Result.toLowerCase());       // individual tests
 
 		const cssClassName = `${nodeStatus} ${this.state.expanded ? "expanded" : ""} ${isSuite(this.props.nodeData) ? "expandable" : ""}`;
+		const failureInfoMsg = !isSuite(this.props.nodeData) && this.props.nodeData.FailureInfo
+			? this.props.nodeData.FailureInfo.message
+			: null;
 
 		return (
 			<x-node class={cssClassName}>
 				<x-nodeHeader onClick={(e: React.SyntheticEvent<any>) => this.onNodeClick(e)}>
 					<x-twistie />
 					<x-statusIcon />
-					<x-nodeTitle>{nodeTitle}</x-nodeTitle>
+					<x-nodeTitle title={failureInfoMsg}>{nodeTitle}</x-nodeTitle>
 				</x-nodeHeader>
+
+				{!isSuite(this.props.nodeData) && this.props.nodeData.FailureInfo
+					? <x-nodeDetails>
+						{this.props.nodeData.FailureInfo.message}
+						<br />
+						{this.props.nodeData.FailureInfo.stackTrace}
+					</x-nodeDetails>
+					: []}
 
 				{isSuite(this.props.nodeData) ? this.props.nodeData.children.map(suite => <Node nodeData={suite} />) : []}
 

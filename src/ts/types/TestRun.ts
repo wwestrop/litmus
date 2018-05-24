@@ -38,14 +38,14 @@ export class TestRun {
 	}*/
 
 	// When communincating this object across the IPC via JSON serialisation, property getters will not be called 😢
-	// TODO find a nicer way
+	// TODO find a nicer way (seems it works by accident on the other end???? As these "NumFailed" "methods" can be read just as if they were properties - the TS compiler should be emitting property accessor calls????). I don't even know *why* this works at the other end, but refuses to stringify these properties without 😭
 	public toJSON(): any {
 		return {
 			Duration: this.Duration,
 			NumPassed: this.NumPassed,
 			NumFailed: this.NumFailed,
 			NumSkipped: this.NumSkipped,
-			IndividualTestResults: this.IndividualTestResults,
+			IndividualTestResults: this.IndividualTestResults.map(tr => tr.toJSON()),
 			Progress: this.Progress,
 		};
 	}

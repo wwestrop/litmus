@@ -36,8 +36,13 @@ x-nodeHeader {
 x-nodeDetails {
 	display: block;
 	background-color: #413F57;
-	padding-left: 56px;
+	padding: 5px 16px 5px 16px;
+	cursor: text;
+	user-select: text;
 	font-size: 10pt;
+	border-radius: 5px;
+	margin-left: 45px;
+	margin-right: 45px;
 }
 
 x-node.expanded {

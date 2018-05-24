@@ -12,6 +12,7 @@ import { Directory } from '../../../lib/LibFs/Fs';
 import { TestStatus } from '../types/TestStatus';
 import Module = require('module');
 import Mocha = require('mocha');
+import { TestFailureInfo } from '../types/TestFailureInfo';
 
 export class MochaTestRunner implements ITestRunner {
 
@@ -58,7 +59,9 @@ export class MochaTestRunner implements ITestRunner {
 			testCase.groupingKeys["Suite"] = hierarchy;
 			testCase.groupingKeys["File"] = [fileName];
 
-			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration));
+			const failureInfo = this.getFailureInfo(t);
+
+			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration, failureInfo));
 
 			numTestsRun++;
 			const pct = this.capProgress((numTestsRun / totalTests) * 100); // TODO totalTests === 0 > DIV/0 error
@@ -95,6 +98,20 @@ export class MochaTestRunner implements ITestRunner {
 		else {
 			throw `Unknown test status, '${test.state}'`;
 			// TODO observable.error????
+		}
+	}
+
+	private getFailureInfo(test: ITest): TestFailureInfo | null {
+		const status = this.getTestStatus(test);
+
+		if (status === "Failed") {
+			// TODO are we always guaranteed these members on an error object? Also, ICKY casting 😩
+			// TODO truncate this after a few lines or something........
+			// return `${(<any>test).err.message} \n ${(<any>test).err.stack}`;
+			return new TestFailureInfo((<any>test).err.message, (<any>test).err.stack);
+		}
+		else {
+			return null;
 		}
 	}
 
