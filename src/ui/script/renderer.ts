@@ -3,6 +3,7 @@ import { TestRun } from '../../ts/types/TestRun';
 import { TestStatus } from '../../ts/types/TestStatus';
 import { TestCaseOutcome } from '../../ts/types/TestCaseOutcome';
 import * as reactTree from './reactTree';
+import * as statusDisplay from './statusDisplay';
 import _ = require('lodash');
 
 let lastRunResults: TestRun | null;
@@ -31,6 +32,8 @@ ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 		// reattach handler. TODO yuck
 		LitmusDom.groupByDropDown.onchange = onGroupingChanged;
 	}
+
+	statusDisplay.render(lastRunResults);
 
 	pushTestState();
 });

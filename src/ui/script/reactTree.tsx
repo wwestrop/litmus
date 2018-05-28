@@ -1,5 +1,3 @@
-// tslint:disable:no-any A lot of the `any`s are just for framework code, where I might not have or care about a type
-
 import ReactDOM = require('react-dom');
 import React = require('react');
 import { TreeNode } from './renderer';

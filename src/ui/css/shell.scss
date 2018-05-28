@@ -5,6 +5,7 @@ $backgroundColour: #515379;
 $toolbarColour: #4A4D66;
 
 $toolbarHeight: 64px;
+$toolbarPadding: 4px;
 // $statusbarHeight: 26px;
 $statusbarHeight: 0px;
 
@@ -132,7 +133,7 @@ x-toolbar {
 	background-color: $toolbarColour;
 	display: block;
 	z-index: 1000;
-	padding: 4px;
+	padding: $toolbarPadding;
 	color: $textOnBackgroundColour;
 
 	x-tabGroup {
@@ -223,7 +224,7 @@ x-toolbar {
 		font-family: 'Noto Sans', 'Lucida Sans', Helvetica, 'Microsoft Sans Serif', Arial, sans-serif;
 		font-size: 10pt;
 		vertical-align: middle;
-		//cursor: pointer;
+		height: #{$toolbarHeight - 2 * $toolbarPadding};
 
 		&:hover {
 			background-color: mix(#fff, $toolbarColour, 10%);
@@ -237,20 +238,6 @@ x-toolbar {
 			margin-right: 10px;
 			vertical-align: middle;
 		}
-	}
-
-	.statusDisplay {
-		background-color: mix(#fff, $toolbarColour, 20%);
-		//$inset: 3px;
-		//margin: $inset;
-		padding: 7px;
-		//height: #{$toolbarHeight - $toolbarShadowHeight - 2 * 4px}; // 4px = toolbar padding
-		display: inline-block;
-		//box-shadow: inset 0px 1px 2px -1px rgba(0, 0, 0, 0.9);
-		//box-shadow: inset 0px 1px 2px 1px rgba(0, 0, 0, 0.5), outset 0px 1px 2px 1px rgba(255, 255, 255, 0.9);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		font-size: 9pt;
-		vertical-align: middle;
 	}
 }
 

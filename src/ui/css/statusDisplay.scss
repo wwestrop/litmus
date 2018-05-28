@@ -1,0 +1,44 @@
+@import 'shell.scss';
+
+$background: mix(#fff, $toolbarColour, 20%);
+//$failedBackground: mix(#FE4E4E, $background, 50%);
+//$passedBackground: mix(#5ED21E, $background, 50%);
+
+
+x-statusDisplay {
+	background-color: $background;
+	padding: 7px;
+	display: inline-block;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	font-size: 9pt;
+	vertical-align: middle;
+	height: #{$toolbarHeight - 2 * $toolbarPadding};
+
+	& .statusIcon {
+		width: 43px;
+		height: 43px;
+		margin: -1px -2px -2px -1px;
+
+		&.passed {
+			background-image: url('../img/statuswindow-pass.png');
+		}
+
+		&.failed {
+			background-image: url('../img/statuswindow-fail.png'); 
+		}
+	}
+
+	td {
+		padding: 0;
+		border-spacing: 0;
+		border-collapse: collapse;
+	}
+
+	// .failed {
+	// 	background-color: $failedBackground;
+	// }
+
+	// .passed {
+	// 	background-color: $passedBackground;
+	// }
+}
