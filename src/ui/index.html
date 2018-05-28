@@ -24,8 +24,7 @@
 			<button>Watch sources</button>
 			<button>Export/Produce report</button>
 			<button>Preferences</button> -->
-			
-			<!-- <x-buttonGroup></x-buttonGroup> -->
+
 			<x-statusDisplay></x-statusDisplay>
 
 			<x-tabGroup class="right">
@@ -33,11 +32,18 @@
 				<x-tabContent>
 					<x-resultsPanel>
 						<x-resultsTree>
-							<p>dummy 1</p><p>dummy 2</p><p style="color: #FE4E4E">dummy 3: <br />expected {} to be an instance of ParameterContext</p><p>dummy 4</p><p>dummy 5</p><p>dummy 6</p> <!-- TODO red failures indistinct against the background -->
-							<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
-							<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
-							<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
-							<p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p><p>dummy</p>
+							<div class="welcome">
+								<div class="leftColumn">
+									<img src="./img/welcome.png" />
+								</div>
+								<div class="rightColumn">
+									<div>
+										<h1>We're ready to begin testing!</h1>
+										<h2><a id="lnkWelcomeOpen">Open a project</a> to get started...</h2>
+										<div class="hint">Hint: The shortcut for this is Ctrl+O</div> <!-- TODO re-configure for OS X -->
+									</div>
+								</div>
+							</div>
 						</x-resultsTree>
 					</x-resultsPanel>
 				</x-tabContent>

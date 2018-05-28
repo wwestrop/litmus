@@ -8,6 +8,7 @@ $background: mix(#fff, $toolbarColour, 20%);
 x-statusDisplay {
 	background-color: $background;
 	padding: 7px;
+	margin: 0 16px 0 16px;
 	display: inline-block;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	font-size: 9pt;
