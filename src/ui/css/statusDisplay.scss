@@ -14,6 +14,7 @@ x-statusDisplay {
 	font-size: 9pt;
 	vertical-align: middle;
 	height: #{$toolbarHeight - 2 * $toolbarPadding};
+	position: relative;
 
 	& .statusIcon {
 		width: 43px;
@@ -42,4 +43,21 @@ x-statusDisplay {
 	// .passed {
 	// 	background-color: $passedBackground;
 	// }
+
+	x-progressBar {
+		display: block;
+		height: 3px;
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		transition: width 0.1s, opacity 0.75s;
+
+		&.failed {
+			background-color: #f00;
+		}
+
+		&.passed {
+			background-color: #0f0;
+		}
+	}
 }
