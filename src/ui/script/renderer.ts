@@ -8,6 +8,7 @@ import _ = require('lodash');
 let lastRunResults: TestRun | null;
 
 // TODO factor constant
+/** Fired to update the display as new information is streamed from the test runner */
 ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 
 	lastRunResults = f;
@@ -385,3 +386,21 @@ LitmusDom.filterAll.onchange = onSearchChanged;
 LitmusDom.filterPassed.onchange = onSearchChanged;
 LitmusDom.filterFailed.onchange = onSearchChanged;
 LitmusDom.filterSkipped.onchange = onSearchChanged;
+
+function fixMacAccelerator(accelerator: string): string {
+	return process.platform === 'darwin' ? accelerator.replace("Ctrl", "Cmd") : accelerator;
+}
+
+function populateTooltipAccelerators() {
+	const buttons = document.querySelectorAll("x-toolbar button")
+	for(const b of buttons) {
+		if (b.hasAttribute("data-accelerator")) {
+			let accel = b.getAttribute("data-accelerator")!;
+			accel = fixMacAccelerator(accel);
+
+			(<HTMLButtonElement>b).title = `${(<HTMLButtonElement>b).title} (${accel})`;
+		}
+	}
+}
+
+populateTooltipAccelerators();

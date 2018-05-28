@@ -1,12 +1,10 @@
-﻿$textColour: #FFF;
-
-$brandColour: #45D399;
+﻿$brandColour: #45D399;
 $accentColour: #4545D3;
 $panelColour: #6F719D;
 $backgroundColour: #515379;
 $toolbarColour: #4A4D66;
 
-$toolbarHeight: 70px;
+$toolbarHeight: 64px;
 // $statusbarHeight: 26px;
 $statusbarHeight: 0px;
 
@@ -107,7 +105,7 @@ throbber-shell2 {
 
 
 
-body {	
+body {
 	margin: 0;
 	padding: 0;
 	background-color: $backgroundColour;
@@ -131,11 +129,11 @@ x-shell {
 x-toolbar {
 	height: $toolbarHeight;
 	width: 100%;
-	//background-image: linear-gradient(to bottom, $toolbarColour 0%, $toolbarColour /*todo blend this with the shadow colour*/ 93%, mix($shadowColour, $accentColour, 80%) 93%, $accentColour 100%);
-	//background-image: linear-gradient(to bottom, $toolbarColour 0px, $toolbarColour calc(#{$toolbarHeight} - #{$toolbarShadowHeight}), mix($shadowColour, $accentColour, 80%) calc(#{$toolbarHeight} - #{$toolbarShadowHeight}), $accentColour 100%);
 	background-color: $toolbarColour;
 	display: block;
 	z-index: 1000;
+	padding: 4px;
+	color: $textOnBackgroundColour;
 
 	x-tabGroup {
 		height: $tabHeight;
@@ -216,7 +214,47 @@ x-toolbar {
 			display: block;
 		}
 	}
+
+	button {
+		padding: 4px 5px 4px 5px;
+		border: none;
+		background-color: $toolbarColour;
+		color: $textOnBackgroundColour;
+		font-family: 'Noto Sans', 'Lucida Sans', Helvetica, 'Microsoft Sans Serif', Arial, sans-serif;
+		font-size: 10pt;
+		vertical-align: middle;
+		//cursor: pointer;
+
+		&:hover {
+			background-color: mix(#fff, $toolbarColour, 10%);
+		}
+
+		&:active {
+			background-color: mix(#000, $toolbarColour, 10%);
+		}
+
+		img {
+			margin-right: 10px;
+			vertical-align: middle;
+		}
+	}
+
+	.statusDisplay {
+		background-color: mix(#fff, $toolbarColour, 20%);
+		//$inset: 3px;
+		//margin: $inset;
+		padding: 7px;
+		//height: #{$toolbarHeight - $toolbarShadowHeight - 2 * 4px}; // 4px = toolbar padding
+		display: inline-block;
+		//box-shadow: inset 0px 1px 2px -1px rgba(0, 0, 0, 0.9);
+		//box-shadow: inset 0px 1px 2px 1px rgba(0, 0, 0, 0.5), outset 0px 1px 2px 1px rgba(255, 255, 255, 0.9);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		font-size: 9pt;
+		vertical-align: middle;
+	}
 }
+
+
 
 /*x-statusbar {
 	height: $statusbarHeight;
