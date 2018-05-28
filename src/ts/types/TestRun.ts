@@ -49,4 +49,6 @@ export class TestRun {
 			Progress: this.Progress,
 		};
 	}
+
+	public static readonly Empty: TestRun = new TestRun([], 0);
 }

@@ -6,7 +6,7 @@ import * as reactTree from './reactTree';
 import * as statusDisplay from './statusDisplay';
 import _ = require('lodash');
 
-let lastRunResults: TestRun | null;
+let lastRunResults: TestRun = TestRun.Empty;
 
 // TODO factor constant
 /** Fired to update the display as new information is streamed from the test runner */
@@ -188,7 +188,7 @@ function isEqual(p1: string[], p2: string[]): boolean {
 function pushTestState() {
 	const selectedGroupingKey = LitmusDom.groupByDropDown.value;
 
-	const convertedForReact = convertToTreeNodes(lastRunResults!.IndividualTestResults, selectedGroupingKey);
+	const convertedForReact = convertToTreeNodes(lastRunResults.IndividualTestResults, selectedGroupingKey);
 
 	const filtered = filterTree(convertedForReact, filterTest);
 
