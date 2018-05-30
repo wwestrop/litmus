@@ -25,7 +25,10 @@
 			<button>Export/Produce report</button>
 			<button>Preferences</button> -->
 
-			<x-statusDisplay></x-statusDisplay>
+			<x-statusDisplay>
+				<!-- TODO I don't like this, can I tidy it up? -->
+				<span style="line-height: 51px; margin: -80px 0 -80px 0">No tests loaded</span>
+			</x-statusDisplay>
 
 			<x-tabGroup class="right">
 				<input type="radio" name="topLevelTabs" id="rResultsTab" checked /><label for="rResultsTab">Results</label>
@@ -78,11 +81,9 @@
 			</x-buttonGroup>
 			&nbsp;&nbsp;&nbsp;
 			<span>Group by:&nbsp;</span> <select id="groupByDropdown">
-				<option value=""></option> <!-- TODO grouping by nothing (ie a flat list) not supported right now -->
-				<option value="File">File</option>
-				<option value="Test outcome">Test outcome</option>
-				<option value="Execution time">Execution time</option>
-				<option value="Class/Namespace">Class/Namespace</option>
+				<!-- TODO grouping by nothing (ie a flat list) not supported right now -->
+				<!-- TODO nbsps a bit ick, but I want the UI to "look" and "feel" mostly "stable" (ie not jump around as things are loaded up) -->
+				<option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
 			</select>
 			&nbsp;&nbsp;&nbsp;
 			<input id="tests-searchbox" type="search" value="Type to search…" class="placeholder"/ >

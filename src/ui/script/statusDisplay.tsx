@@ -28,24 +28,24 @@ class StatusDisplay extends React.Component<IStatusDisplay> {
 				<table style={{fontSize: '10pt', height: '100%'}}>
 					<tbody>
 						<tr>
-							<td className="icon-column" rowSpan={2} style={{padding: '0 10px 0 0'}}>
+							<td className="icon-column" rowSpan={2}>
 								<div className={`statusIcon ${overallStatus_CssClass}`}></div>
 							</td>
 							<td>
-								<span className="statusText" style={{fontWeight: 'bold', fontSize: '11pt'}}>{overallStatus_display}</span>
+								<span className="statusText">{overallStatus_display}</span>
 							</td>
-							<td className="sundry-column" style={{padding: '0 10px 0 40px'}}>
-								<div className="timeIco" style={{display: 'inline-block', backgroundColor: 'purple', width: '16px', height: '16px', verticalAlign: 'middle'}}></div>
-								<span className="sundryLabel" style={{verticalAlign: 'middle', padding: '0 0 0 6px'}}>Duration: {durationSeconds}s</span>
+							<td className="sundry-column">
+								<div className="sundryIcon duration"></div>
+								<span className="sundryLabel">Duration: {durationSeconds}s</span>
 							</td>
 						</tr>
 						<tr>
 							<td>
 								<StatusNumberDetails testRun={this.props.testRun} />
 							</td>
-							<td className="sundry-column" style={{padding: '0 10px 0 40px'}}>
-								<div className="covIco" style={{display: 'inline-block', backgroundColor: 'purple', width: '16px', height: '16px', verticalAlign: 'middle'}}></div>
-								<span className="sundryLabel" style={{verticalAlign: 'middle', padding: '0 0 0 6px'}}>Coverage: N/A</span>
+							<td className="sundry-column">
+								<div className="sundryIcon coverage"></div>
+								<span className="sundryLabel">Coverage: N/A</span>
 							</td>
 						</tr>
 					</tbody>

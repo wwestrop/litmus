@@ -8,7 +8,7 @@ $background: mix(#fff, $toolbarColour, 20%);
 x-statusDisplay {
 	background-color: $background;
 	padding: 7px;
-	margin: 0 16px 0 16px;
+	margin: 0 30px 0 30px;
 	display: inline-block;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	font-size: 9pt;
@@ -36,6 +36,26 @@ x-statusDisplay {
 		border-collapse: collapse;
 	}
 
+	tr {
+		.icon-column {
+			padding: 0 10px 0 0;
+		}
+
+		.sundry-column {
+			padding: 0 10px 0 40px;
+
+			>.sundryLabel {
+				vertical-align: middle;
+				padding: 0 0 0 6px;
+			}
+		}
+	}
+
+	.statusText {
+		font-weight: bold;
+		font-size: 11pt;
+	}
+
 	// .failed {
 	// 	background-color: $failedBackground;
 	// }
@@ -58,6 +78,21 @@ x-statusDisplay {
 
 		&.passed {
 			background-color: #0f0;
+		}
+	}
+
+	.sundryIcon {
+		display: inline-block;
+		width: 16px;
+		height: 16px;
+		vertical-align: middle;
+
+		&.duration {
+			background-image: url('../img/duration.png');
+		}
+
+		&.coverage {
+			background-image: url('../img/coverage.png');
 		}
 	}
 }
