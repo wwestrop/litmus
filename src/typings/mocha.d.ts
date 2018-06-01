@@ -8,6 +8,8 @@ declare module "mocha" {
 	export interface ITest {
 		duration: number;
 		file?: string;
+		err?: Error;
+		type: 'test';
 	}
 
 	export interface ISuite extends NodeJS.EventEmitter {
@@ -17,9 +19,20 @@ declare module "mocha" {
 		tests: ITest[];
 		pending: boolean;
 		root: boolean;
- 
+
 		duration: number;
 		file?: string;
+
+		type: 'suite';
+	}
+
+	export interface IHook {
+		parent: ISuite;
+		state: 'failed' | 'passed' | undefined;
+		err?: Error;
+		type: 'hook';            // the discriminating property
+
+		originalTitle: '"before each" hook' | '"after each" hook' | '"before all" hook' | '"after all" hook';
 	}
 }
 

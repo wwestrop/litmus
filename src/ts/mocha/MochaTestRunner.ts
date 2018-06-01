@@ -1,7 +1,7 @@
 import { ITestRunner } from '../logic/ITestRunner';
 import { LitmusContext } from '../types/LitmusContext';
 import { TestRun } from '../types/TestRun';
-import { ITest } from 'mocha';
+import { ITest, ISuite, IHook } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
 import { Observer, Observable } from '../../../lib/LibObservable/Observable{T}';
@@ -47,28 +47,58 @@ export class MochaTestRunner implements ITestRunner {
 		const allResults = new Array<TestCaseOutcome>();
 		let numTestsRun: number = 0;
 
+		mochaRunner.on('fail', (t: ITest | IHook) => {
+			if (t.type === 'hook' && t.originalTitle === '"before each" hook') {
+				// TODO handle all the other types of hooks that could go wrong
+				// TODO add something to the error message so it's clear that a hook is failing, not the test itself
+				failDescendants(t.parent, t.err!);
+			}
+		});
+
 		mochaRunner.on('test end', (t: ITest) => {
+			pushResult(t);
+		});
+
+		const that = this;
+		function pushResult(t: ITest) {
 			const testDuration = t.duration || 0;
-			const testStatus = this.getTestStatus(t);
+			const testStatus = that.getTestStatus(t);
 
 			const testCase = new TestCase();
 			testCase.displayName = t.title;
-			const hierarchy = this.constructHierarchy(t);
+			const hierarchy = that.constructHierarchy(t);
 			const fileName = t.file || "";
 
 			testCase.groupingKeys["Suite"] = hierarchy;
 			testCase.groupingKeys["File"] = [fileName];
 
-			const failureInfo = this.getFailureInfo(t);
+			const failureInfo = that.getFailureInfo(t);
 
 			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration, failureInfo));
 
 			numTestsRun++;
-			const pct = this.capProgress((numTestsRun / totalTests) * 100); // TODO totalTests === 0 > DIV/0 error
+			const pct = that.capProgress((numTestsRun / totalTests) * 100); // TODO totalTests === 0 > DIV/0 error
 
 			const testRun = new TestRun(allResults, pct);
 			observer.next(testRun);
-		});
+		}
+
+		/** On failure of a suite hook, pushes that failure down onto the child tests too, so that
+		 *  they show as failed on the UI (with the reason) */
+		function failDescendants(suite: ISuite, err: Error) {
+			for (const t of suite.tests) {
+				const updatedTest: ITest = {
+					...t,
+					state: "failed",
+					err: err,
+				};
+
+				pushResult(updatedTest);
+			}
+			for (const s of suite.suites) {
+				failDescendants(s, err);
+			}
+		}
 	}
 
 	private uncache(filepath: string) {
@@ -104,11 +134,9 @@ export class MochaTestRunner implements ITestRunner {
 	private getFailureInfo(test: ITest): TestFailureInfo | null {
 		const status = this.getTestStatus(test);
 
-		if (status === "Failed") {
-			// TODO are we always guaranteed these members on an error object? Also, ICKY casting 😩
-			// TODO truncate this after a few lines or something........
-			// return `${(<any>test).err.message} \n ${(<any>test).err.stack}`;
-			return new TestFailureInfo((<any>test).err.message, (<any>test).err.stack);
+		if (status === "Failed" && test.err) {
+			// TODO truncate stack after a few lines or something........
+			return new TestFailureInfo(test.err.message, test.err.stack);
 		}
 		else {
 			return null;
