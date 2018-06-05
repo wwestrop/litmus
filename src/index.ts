@@ -131,21 +131,20 @@ ipcMain.on("setProgressBar", (e: Event, progress: number, progbarState: Electron
 	mainWindow.setProgressBar(progress, progbarState);
 });
 
+const failedTaskbarOverlay = nativeImage.createFromPath(Path.resolve(__dirname, "res", "failBadge_taskbar.png"));
+const passedTaskbarOverlay = nativeImage.createFromPath(Path.resolve(__dirname, "res", "passBadge_taskbar.png"));
+
 // TODO ICKY string. But multiple serialsiation roundtrips going on here
 // to communciate from a hidden processing window to the main window
 ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
 
 	// TODO to avoid lots of parsing and serialisation on large test runs - ship off to the UI only the latest test run??
-
 	const failed = (<any>testrunJson).IndividualTestResults.some((r: any) => r.Result === "Failed");
 
-	// TODO sort the paths out for dist
-	const overlayIcon = failed ? Path.resolve("res/failBadge.png") : Path.resolve("res/passBadge.png");
+	const overlayIcon = failed ? failedTaskbarOverlay : passedTaskbarOverlay;
+	const caption = `Tests ${failed ? "failed" : "passed"}`;
 
-	// TODO create the nativeimages once and store them
-	mainWindow.setOverlayIcon(
-		nativeImage.createFromPath(overlayIcon),
-		"Tests passed"); // TODO
+	mainWindow.setOverlayIcon(overlayIcon, caption);
 
 	mainWindow.webContents.send("update-test-results", testrunJson); // TODO not sync - out of order messages?
 });

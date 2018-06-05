@@ -6,13 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "compile": "tsc",
+    "start": "electron bin/src",
     "build": "npm-run-all build:*",
     "build:0": "shx mkdir -p bin/src/",
-    "build:1": "shx cp package.json bin/src/",
-    "build:2": "tslint src/ts/**/*.ts",
-    "build:3": "parcel build src/ui/index.html --target electron --public-url ./ --out-dir bin/src/ui",
-    "build:4": "parcel build src/ui/backgroundTestRunnerWorker.html --target electron --public-url ./ --out-dir bin/src/ui",
-    "build:5": "parcel build src/index.ts --target electron --public-url ./ --out-dir bin/src",
+    "build:1": "npm run copy-resources",
+    "build:2": "shx cp package.json bin/src/",
+    "build:3": "tslint src/ts/**/*.ts",
+    "build:4": "parcel build src/ui/index.html --no-minify --target electron --public-url ./ --out-dir bin/src/ui",
+    "build:5": "parcel build src/ui/backgroundTestRunnerWorker.html --no-minify  --target electron --public-url ./ --out-dir bin/src/ui",
+    "build:6": "parcel build src/index.ts --no-minify  --target electron --public-url ./ --out-dir bin/src",
     "clean": "npm-run-all clean:*",
     "clean:0": "shx rm -rf bin",
     "clean:1": "shx rm -rf dist",
@@ -20,7 +22,11 @@
     "pack-win": "npm-run-all pack-win:*",
     "pack-win:0": "npm run build",
     "pack-win:1": "shx cp electron-builder.json bin/src/",
-    "pack-win:2": "electron-builder build --project bin/src"
+    "pack-win:2": "electron-builder build --project bin/src",
+    "copy-resources": "npm-run-all copy-resources:*",
+    "copy-resources:0": "shx mkdir -p bin/src/res",
+    "copy-resources:1": "shx cp res/failBadge_taskbar.png bin/src/res/",
+    "copy-resources:2": "shx cp res/passBadge_taskbar.png bin/src/res/"
   },
   "keywords": [
     "litmus",

@@ -11,4 +11,12 @@ export class TestCase {
 	 *  of which the tests can be grouped in the UI. May be hierarchical (ie a list of strings) */
 	// public groupingKeys: {[groupingField: string]: string[] | string; } = {};
 	public groupingKeys: {[groupingField: string]: string[]} = {};
+
+	// tslint:disable-next-line:no-any `any` is _exactly_ what it is
+	public toJSON(): any {
+		return {
+			displayName: this.displayName,
+			groupingKeys: this.groupingKeys,
+		};
+	}
 }
