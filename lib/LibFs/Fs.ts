@@ -89,6 +89,22 @@ export class File {
 	public readSync(encoding: string | null): string | Buffer {
 		return Fs.readFileSync(this.fullPath, encoding);
 	}
+
+	public peek(length: number, encoding: string = "utf8"): string {
+
+		let descriptor: number = 0;
+		try {
+			descriptor = Fs.openSync(this.fullPath, "r", 0o666);
+
+			const buffer = Buffer.alloc(4096, 0, 'utf8');
+			const bytesRead = Fs.readSync(descriptor, buffer, 0, buffer.length, 0);
+
+			return buffer.toString(encoding);
+		}
+		finally {
+			Fs.closeSync(descriptor);
+		}
+	}
 }
 
 export class Directory {

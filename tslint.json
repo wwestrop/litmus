@@ -30,7 +30,7 @@
 		"indent": [ true, "tabs", 4],
 		"linebreak-style": [true, "CRLF"],
 		"max-classes-per-file": [true, 3],
-		"max-line-length": [true, 120],
+		"max-line-length": [true, 130],
 		"prefer-const": true,
 		"prefer-readonly": true,
 		"array-type": [true, "array"],

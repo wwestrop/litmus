@@ -13,8 +13,12 @@ import { TestStatus } from '../types/TestStatus';
 import Module = require('module');
 import Mocha = require('mocha');
 import { TestFailureInfo } from '../types/TestFailureInfo';
+import { IFileLocatorStrategy } from '../logic/common/IFileLocatorStrategy';
+import { KeywordSamplingFileLocatorStrategy, MochaKeywords } from '../logic/common/KeywordSamplingFileLocatorStrategy';
 
 export class MochaTestRunner implements ITestRunner {
+
+	private readonly _fileLocatorStrategy: IFileLocatorStrategy = new KeywordSamplingFileLocatorStrategy(MochaKeywords);
 
 	constructor (private readonly _directory: Directory) {
 	}
@@ -32,7 +36,8 @@ export class MochaTestRunner implements ITestRunner {
 		const mocha = new Mocha();
 
 		const jsFiles = this._directory.getFilesRecursive()
-			.filter(f => f.name.fullName.toLowerCase().endsWith(".js")); // TODO exclude node_modules ??????? Which means we have to do directory separators
+			.filter(f => f.name.fullName.toLowerCase().endsWith(".js"))  // TODO exclude node_modules ??????? Which means we have to do directory separators
+			.filter(f => this._fileLocatorStrategy.isFileAcceptable(f)); // TODO cache files between runs and only re-check if it has changed
 		jsFiles.forEach(f => {
 			this.uncache(f.fullPath);
 			mocha.addFile(f.fullPath);
