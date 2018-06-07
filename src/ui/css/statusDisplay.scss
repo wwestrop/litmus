@@ -1,4 +1,4 @@
-@import 'shell.scss';
+@import 'variables.scss';
 
 $background: mix(#fff, $toolbarColour, 20%);
 //$failedBackground: mix(#FE4E4E, $background, 50%);
@@ -8,7 +8,7 @@ $background: mix(#fff, $toolbarColour, 20%);
 x-statusDisplay {
 	background-color: $background;
 	padding: 7px;
-	margin: 0 30px 0 30px;
+	margin: 0 10px 0 10px;
 	display: inline-block;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	font-size: 9pt;

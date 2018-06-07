@@ -1,27 +1,42 @@
 
 export class Observable<T> {
 
-    constructor(private readonly generatorFunc: (observer: Observer<T>) => void) {
-    }
+	constructor(private readonly generatorFunc: (observer: Observer<T>) => void) {
+	}
 
-    subscribe(callback: (value: T) => void) {
-        let observer: Observer<T> = new Observer<T>(this, callback);
-        this.generatorFunc(observer);
-    }
+	/** @param callback Called as each new value is delivered
+	 *  @param completedCallback Called when all available values have been exhausted */
+	subscribe(callback: (value: T) => void, completedCallback?: () => void) {
+		let observer: Observer<T> = new Observer<T>(this, callback, completedCallback);
+		this.generatorFunc(observer);
+	}
 
 }
 
 export class Observer<T> {
 
-    constructor(private readonly observable: Observable<T>, private readonly callback: (value: T) => void) {
-    }
+	private _completed = false;
 
-    next(value: T): void {
-        this.callback(value);
-    }
+	constructor(
+		private readonly observable: Observable<T>,
+		private readonly callback: (value: T) => void,
+		private readonly completedCallback?: () => void) {
+	}
 
-    complete(): void {
-        // TODO what behaviour should this have?
+	next(value: T): void {
+		this.callback(value);
+	}
+
+	complete(): void {
+
+		if (this._completed) {
+			return;
+		}
+
+		this._completed = true;
+		if (this.completedCallback) {
+			this.completedCallback();
+		}
 	}
 
 	error(error: Error) {

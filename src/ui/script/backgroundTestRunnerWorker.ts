@@ -43,7 +43,11 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 				// if (progress < 0 && progbarState === "error") {
 				// 	flashTaskbarIcon();
 				// }
-			});
+			},
+			() => {
+				trampoline("test-run-finished");
+			}
+		);
 	}
 	catch (ex) {
 		if (ex instanceof TestsNotDiscoveredException) {
@@ -59,4 +63,9 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 			throw ex;
 		}
 	}
+}
+
+/** Bounces messages to the main BrowserWindow via the electron main process */
+function trampoline(messageName: string, ...args: any[]) {
+	ipcRenderer.send("trampoline", messageName, ...args);
 }

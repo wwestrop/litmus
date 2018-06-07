@@ -1,24 +1,4 @@
-﻿$brandColour: #45D399;
-$accentColour: #4545D3;
-$panelColour: #6F719D;
-$backgroundColour: #515379;
-$toolbarColour: #4A4D66;
-
-$toolbarHeight: 64px;
-$toolbarPadding: 4px;
-// $statusbarHeight: 26px;
-$statusbarHeight: 0px;
-
-$filterBarHeight: 36px;
-
-$textOnPanelColour: #2B2D3B;
-$textOnBackgroundColour: #ACB2D0;
-
-$shadowColour: #29292c;
-$toolbarShadowHeight: 5px;
-
-$tabHeight: 54px;
-$tabBorderWidth: 2px;
+﻿@import 'variables.scss';
 
 
 html {
@@ -53,55 +33,26 @@ input[type="text"] {
 
 
 
-/*throbber-shell0 {
-	width: 100px;
-	height: 100px;
-	position: absolute;
-	margin: -15px;
-	left: 400px;
-	top: 400px;
-	display: block;
-	border-left: 7px solid rgba($brandColour, 0.4);
-	border-top: 7px solid rgba($brandColour, 0.4);
-	border-radius: 99999px;
-	z-index: 999;
-	animation: negspin 1.8s linear infinite;
-}*/
-throbber-shell1 {
-	width: 40px;
-	height: 40px;
-	position: absolute;
-	left: 265px;
-	top: 6px;
-	display: block;
-	border-left: 5px solid $brandColour;
-	border-top: 5px solid $brandColour;
-	border-radius: 99999px;
-	z-index: 99999;
-	animation: spin 1s linear infinite;
-}
+
 throbber-shell2 {
-	width: 40px;
-	height: 40px;
-	position: absolute;
-	left: 265px;
-	top: 6px;
-	margin: 10px;
-	display: block;
-	border-left: 3px solid $brandColour;
-	border-top: 3px solid $brandColour;
+	width: 24px;
+	height: 24px;
+	position: relative;
+	left: 10px;
+	top: 7px;
+	border-left: 2px solid $brandColour;
+	border-top: 2px solid $brandColour;
 	border-radius: 99999px;
-	z-index: 9999999;
 	animation: spin 0.6s linear infinite;
+	display: none;
+
+	&.visible {
+		display: inline-block;
+	}
 }
 @keyframes spin {
 	100% {
 		transform: rotate(360deg);
-	}
-}
-@keyframes negspin {
-	100% {
-		transform: rotate(-360deg);
 	}
 }
 

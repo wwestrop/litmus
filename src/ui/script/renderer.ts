@@ -38,6 +38,18 @@ ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 	pushTestState();
 });
 
+ipcRenderer.on("test-run-finished", (e: Event) => {
+	LitmusDom.isBusy = false;
+});
+
+ipcRenderer.on("testrun-rpc-start", () => {
+	// Enables the throbber
+	LitmusDom.isBusy = true;
+
+	// In parallel, the background test runner host was triggered and will be providing results shortly
+	// TODO!!!!!!!!!!!!!!!! RACE CONDITIONS!!!!!!!!!!!!
+});
+
 ipcRenderer.on("dev-reset", (e: Event) => {
 	// TOOD dev aid only
 	const el = document.getElementsByTagName("x-resultstree")[0];
@@ -350,7 +362,21 @@ abstract class LitmusDom {
 	public static readonly filterFailed = document.getElementById("rStatusFilterFailed")! as HTMLInputElement;
 	public static readonly filterSkipped = document.getElementById("rStatusFilterSkipped")! as HTMLInputElement;
 
+	public static get isBusy(): boolean {
+		return this.throbber.classList.contains("visible");
+	}
+
+	public static set isBusy(value: boolean) {
+		if (value) {
+			this.throbber.classList.add("visible");
+		}
+		else {
+			this.throbber.classList.remove("visible");
+		}
+	}
+
 	private static readonly placeholder: string ="Type to search…"; // TODO really should embed in component. CBA right now
+	private static readonly throbber = document.getElementById("throbber")!;
 
 	public static getSearchText(): string | null {
 		const text = LitmusDom.searchBox.value.trim();

@@ -51,6 +51,7 @@
     "@types/react": "^16.3.13",
     "@types/react-dom": "^16.0.5",
     "chai": "^4.1.2",
+    "devtron": "^1.4.0",
     "electron": "^1.8.2",
     "electron-builder": "^20.13.4",
     "node-sass": "^4.7.2",
