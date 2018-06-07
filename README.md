@@ -1,5 +1,5 @@
 # Litmus
-
+![Litmus main user interface](./doc/img/feature-overview.png)
 
 ## Rationale
 
