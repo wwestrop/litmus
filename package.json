@@ -64,6 +64,7 @@
     "typescript": "^2.6.1"
   },
   "dependencies": {
+    "electron-localshortcut": "^3.1.0",
     "lodash": "^4.17.10",
     "mocha": "^4.1.0",
     "react": "^16.3.2",

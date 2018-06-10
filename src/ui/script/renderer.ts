@@ -276,6 +276,9 @@ function onGroupingChanged (this: HTMLElement, a: Event): any {
 
 function onSearchChanged (this: HTMLElement, a: Event): any {
 	pushTestState();
+
+	// Change menu in main process to reflect the currently selected filter
+	ipcRenderer.send("set-menu-filter-checkbox", LitmusDom.getStatusFilter());
 }
 
 /** Looks at the options on the UI and determines if a given test should be visible, given the options selected. */
@@ -406,8 +409,30 @@ abstract class LitmusDom {
 			return "Skipped";
 		}
 	}
+
+	public static setStatusFilter(selectedFilter: TestStatus | null): void {
+		if (selectedFilter === "Passed") {
+			LitmusDom.filterPassed.checked = true;
+		}
+		else if (selectedFilter === "Failed") {
+			LitmusDom.filterFailed.checked = true;
+		}
+		else if (selectedFilter === "Skipped") {
+			LitmusDom.filterSkipped.checked = true;
+		}
+		else {
+			LitmusDom.filterAll.checked = true;
+		}
+	}
 }
 
+
+ ipcRenderer.on("menu-filter-changed", (e: Event, selectedFilter: TestStatus) => {
+	LitmusDom.setStatusFilter(selectedFilter);
+
+	// Re-run filtering (onchange event handler not fired when UI controls manipulated programatically)
+	pushTestState();
+ });
 
 
 // Since DOM code can't reach in to this module (can't it? is there a way?) and refer to the event handlers,

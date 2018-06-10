@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, MenuItem, dialog, nativeImage, ipcRenderer, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, MenuItem, dialog, nativeImage, ipcMain, shell } from "electron";
 import { File, Directory } from '../lib/LibFs/Fs';
 import { RunnerFactory } from './ts/logic/RunnerFactory';
 import { MochaTestAdapter } from "./ts/mocha/MochaTestAdapter";
@@ -6,9 +6,39 @@ import { TestsNotDiscoveredException } from './ts/exceptions/TestsNotDiscoveredE
 import { prototype } from "events";
 import * as Path from 'path';
 import { TestRun } from './ts/types/TestRun';
+import { TestStatus } from "./ts/types/TestStatus";
+import * as KbShortcuts from 'electron-localshortcut';
 
 /*export*/ let mainWindow: BrowserWindow; // so other processes can poke at it (eg when runner has sth to report, poke in a message via its webcontents, set its progressbar from the main thread - shoulg that win be responsible for setting its own progress? probably. would invilve an extra RPC call though)
 let backgroundWorker: BrowserWindow;
+
+const menus = {
+	viewAll: new MenuItem({
+		label: "View &all tests",
+		accelerator: "CmdOrCtrl+1",
+		type: "radio",
+		checked: true,
+		click: () => onFilterMenuChanged(null),
+	}),
+	viewPassed: new MenuItem({
+		label: "View &passed tests",
+		accelerator: "CmdOrCtrl+2",
+		type: "radio",
+		click: () => onFilterMenuChanged("Passed"),
+	}),
+	viewFailed: new MenuItem({
+		label: "View &failed tests",
+		accelerator: "CmdOrCtrl+3",
+		type: "radio",
+		click: () => onFilterMenuChanged("Failed"),
+	}),
+	viewSkipped: new MenuItem({
+		label: "View &skipped tests",
+		accelerator: "CmdOrCtrl+4",
+		type: "radio",
+		click: () => onFilterMenuChanged("Skipped"),
+	}),
+};
 
 
 const devMode = process.env["LITMUS_DEV"] !== undefined && process.env["LITMUS_DEV"] !== "0";
@@ -66,15 +96,88 @@ function initMainWindow() {
 		mainWindow.webContents.openDevTools();
 		backgroundWorker.webContents.openDevTools();
 	}
+
+	KbShortcuts.register("CmdOrCtrl+F", () => mainWindow.webContents.send("focusSearchBox"));
+	KbShortcuts.register("F3", () => mainWindow.webContents.send("focusSearchBox"));
 }
 
 /** Also sets-up application keyboard shortcuts */
 function initMainMenu() {
-	const menu = new Menu();
+	const menuBar = new Menu();
 
+	menuBar.append(new MenuItem({
+		label: "&Litmus",
+		submenu: [
+			{
+				label: "About Litmus",
+				role: "about"
+			},
+			{
+				type: "separator",
+			},
+			{
+				role: "services",
+			},
+			{
+				type: "separator",
+			},
+			{
+				role: "hide",
+			},
+			{
+				role: "hideothers",
+			},
+			{
+				type: "separator",
+			},
+			{
+				role: "quit"
+			},
+		]
+	}));
+
+	menuBar.append(new MenuItem({
+		label: "&File",
+		submenu: [
+			{
+				label: "Open folder…",
+				accelerator: "CmdOrCtrl+O",
+				click: () => {
+					openDirectory();
+				}
+			}
+		]
+	}));
+
+	menuBar.append(new MenuItem({
+		label: "&Edit",
+		role: "editMenu",
+	}));
+
+	const viewMenuContents = new Menu();
+	viewMenuContents.append(menus.viewAll);
+	viewMenuContents.append(menus.viewPassed);
+	viewMenuContents.append(menus.viewFailed);
+	viewMenuContents.append(menus.viewSkipped);
+	viewMenuContents.append(new MenuItem({
+		type: "separator",
+	}));
+	viewMenuContents.append(new MenuItem({
+		label: "Test &results",
+		type: "radio",
+		checked: true,
+	}));
+	viewMenuContents.append(new MenuItem({
+		label: "Test &coverage",
+		type: "radio",
+		enabled: false,
+	}));
+	viewMenuContents.append(new MenuItem({
+		type: "separator",
+	}));
 	if (devMode) {
-		menu.append(new MenuItem({
-			label: "DevTools",
+		viewMenuContents.append(new MenuItem({
+			label: "Developer tools",
 			accelerator: "F12",
 			click: () => {
 				mainWindow.webContents.toggleDevTools();
@@ -82,50 +185,87 @@ function initMainMenu() {
 			}
 		}));
 	}
-	menu.append(new MenuItem({
-		label: "Search",
-		accelerator: "F2",
-		click: () => {
-			mainWindow.webContents.send("focusSearchBox");
-		}
+	viewMenuContents.append(new MenuItem({
+		type: "separator",
 	}));
-	menu.append(new MenuItem({
-		label: "Re-run tests",
-		accelerator: "F5",
+	viewMenuContents.append(new MenuItem({
+		label: "Full screen",
+		accelerator: "F11",
+		type: "checkbox",
 		click: () => {
-			console.log("re-run tests");
-			mainWindow.webContents.send("dev-reset"); // TODO
-		}
-	}));
-	menu.append(new MenuItem({
-		label: "Open",
-		accelerator: "CmdOrCtrl+O",
-		click: () => {
-			console.log("open a project directory");
-
-			dialog.showOpenDialog(
-				mainWindow,
-				{
-					properties: [ "openDirectory" ]
-				},
-				(s: string[]) => {
-					if (s) {
-						const dir = new Directory(s[0]);
-						mainWindow.setTitle(`${dir.name} - Litmus`);
-
-						// TODO maybe can get rid of the de-caching issue by always restarting the child process/BrowserWindow
-						// TODO Investigate requireTaskPool
-						backgroundWorker.webContents.send("testrun-rpc-start", s[0]);
-					}
-				});
-		}
+			mainWindow.setFullScreen(!mainWindow.isFullScreen());
+		},
 	}));
 
-	Menu.setApplicationMenu(menu);
+	menuBar.append(new MenuItem({
+		label: "&View",
+		submenu: viewMenuContents,
+	}));
+
+	menuBar.append(new MenuItem({
+		label: "&Test",
+		submenu: [
+			{
+				label: "Run all tests",
+				accelerator: "F5",
+				enabled: false,
+			},
+			{
+				label: "Run visible tests only",
+				accelerator: "F6",
+				enabled: false,
+			}
+		]
+	}));
+
+
+	menuBar.append(new MenuItem({
+		label: "&Window",
+		role: "windowMenu"
+	}));
+
+	menuBar.append(new MenuItem({
+		label: "&Help",
+		submenu: [
+			{
+				label: "Online documentation",
+				accelerator: "F1",
+				click: () => shell.openExternal("https://litmus-js.app")
+			}
+		]
+	}));
+
+	Menu.setApplicationMenu(menuBar);
+
 
 	// app.dock.setBadge("x");
 	// app.dock.setIcon(""); // Do the overlay this way?
 }
+
+
+export function openDirectory(): void {
+	dialog.showOpenDialog(
+		mainWindow,
+		{
+			properties: [ "openDirectory" ]
+		},
+		(s: string[]) => {
+			if (s) {
+				const dir = new Directory(s[0]);
+				mainWindow.setTitle(`${dir.name} - Litmus`);
+
+				// TODO maybe can get rid of the de-caching issue by always restarting the child process/BrowserWindow
+				// TODO Investigate requireTaskPool
+				mainWindow.webContents.send("testrun-rpc-start");
+				backgroundWorker.webContents.send("testrun-rpc-start", s[0]);
+			}
+		});
+}
+
+function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
+	mainWindow.webContents.send("menu-filter-changed", selectedFilter);
+}
+
 
 ipcMain.on("setProgressBar", (e: Event, progress: number, progbarState: Electron.ProgressBarOptions) => {
 	mainWindow.setProgressBar(progress, progbarState);
@@ -151,6 +291,29 @@ ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
 
 ipcMain.on("trampoline", (e: Event, messageName: string, ...args: any[]) => {
 	mainWindow.webContents.send(messageName, ...args); // TODO validate the spread operator here
+});
+
+ipcMain.on("set-menu-filter-checkbox", (e: Event, selectedFilter: TestStatus | null) => {
+
+	let menuItem: MenuItem;
+	switch (selectedFilter) {
+		case "Passed":
+			menuItem = menus.viewPassed;
+			break;
+		case "Failed":
+			menuItem = menus.viewFailed;
+			break;
+		case "Skipped":
+			menuItem = menus.viewSkipped;
+			break;
+		default:
+			menuItem = menus.viewAll;
+			break;
+	}
+
+	if (menuItem.checked === false) {
+		menuItem.checked = true;
+	}
 });
 
 // function flashTaskbarIcon() {
