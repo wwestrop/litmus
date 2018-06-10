@@ -43,6 +43,8 @@ ipcRenderer.on("test-run-finished", (e: Event) => {
 });
 
 ipcRenderer.on("testrun-rpc-start", () => {
+	removeWelcomeScreen();
+
 	// Enables the throbber
 	LitmusDom.isBusy = true;
 
@@ -50,11 +52,12 @@ ipcRenderer.on("testrun-rpc-start", () => {
 	// TODO!!!!!!!!!!!!!!!! RACE CONDITIONS!!!!!!!!!!!!
 });
 
-ipcRenderer.on("dev-reset", (e: Event) => {
-	// TOOD dev aid only
-	const el = document.getElementsByTagName("x-resultstree")[0];
-	el.innerHTML = "";
-});
+function removeWelcomeScreen() {
+	const el = document.getElementsByClassName("welcome");
+	if (el.length > 0) {
+		el[0].remove();
+	}
+}
 
 ipcRenderer.on("focusSearchBox", (e: Event) => {
 	LitmusDom.searchBox.focus();

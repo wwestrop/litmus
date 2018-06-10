@@ -34,6 +34,7 @@ input[type="text"] {
 
 
 
+
 throbber-shell2 {
 	width: 24px;
 	height: 24px;
@@ -58,6 +59,15 @@ throbber-shell2 {
 
 
 
+@keyframes fadein {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
 
 body {
 	margin: 0;
@@ -67,7 +77,10 @@ body {
 	font-size: 11pt;
 	// box-sizing: content-box;
 	overflow: hidden;
+
+	animation: fadein 0.5s;
 }
+
 
 // todo - is shell necessary? seems to serve same purpose as body element
 x-shell {
