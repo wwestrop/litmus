@@ -43,6 +43,7 @@
   ],
   "author": "Will Westrop",
   "license": "MIT",
+  "homepage": "https://litmus-js.app/",
   "devDependencies": {
     "@types/chai": "^4.1.2",
     "@types/lodash": "^4.14.108",

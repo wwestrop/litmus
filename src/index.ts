@@ -12,6 +12,8 @@ import * as KbShortcuts from 'electron-localshortcut';
 /*export*/ let mainWindow: BrowserWindow; // so other processes can poke at it (eg when runner has sth to report, poke in a message via its webcontents, set its progressbar from the main thread - shoulg that win be responsible for setting its own progress? probably. would invilve an extra RPC call though)
 let backgroundWorker: BrowserWindow;
 
+let selectedDir: Directory | null; // TODO fixing the "selected dir" state across whole app is un-Mac-like where using multiple windows in an app. But then again I want to keep it SIMPLE above all!!
+
 const menus = {
 	viewAll: new MenuItem({
 		label: "View &all tests",
@@ -208,7 +210,9 @@ function initMainMenu() {
 			{
 				label: "Run all tests",
 				accelerator: "F5",
-				enabled: false,
+				click: () => {
+					runTests(selectedDir);
+				}
 			},
 			{
 				label: "Run visible tests only",
@@ -235,15 +239,16 @@ function initMainMenu() {
 		]
 	}));
 
+	// TODO On Mac set the menu - macOS requires it anyway.
+	// TODO Win/Lin, Litmus is simple enough there's no need for a menu. Instead set null -> But set the KB shortcuts instead
 	Menu.setApplicationMenu(menuBar);
-
-
-	// app.dock.setBadge("x");
-	// app.dock.setIcon(""); // Do the overlay this way?
 }
 
+ipcMain.on("request-open-directory", (e: Event, testrunJson: string) => {
+	openDirectory();
+});
 
-export function openDirectory(): void {
+function openDirectory(): void {
 	dialog.showOpenDialog(
 		mainWindow,
 		{
@@ -251,15 +256,33 @@ export function openDirectory(): void {
 		},
 		(s: string[]) => {
 			if (s) {
-				const dir = new Directory(s[0]);
-				mainWindow.setTitle(`${dir.name} - Litmus`);
-
-				// TODO maybe can get rid of the de-caching issue by always restarting the child process/BrowserWindow
-				// TODO Investigate requireTaskPool
-				mainWindow.webContents.send("testrun-rpc-start");
-				backgroundWorker.webContents.send("testrun-rpc-start", s[0]);
+				selectedDir = new Directory(s[0]);
+				runTests(selectedDir);
 			}
 		});
+}
+
+ipcMain.on("request-runTests", () => {
+	runTests(selectedDir);
+});
+
+
+// TODO not necessary to pass the dir in everywhere. It's only ever taken from one place
+// but I like the explicitness about what parameters we're dealing with, rather than spaghetti globals
+function runTests(dir: Directory | null): void {
+
+	if (!dir) {
+		// TODO In the ideal world, the UI doesn't allow this at all
+		// TODO But that makes the UI stateful, and don't want to deal with that at this point
+		return;
+	}
+
+	mainWindow.setTitle(`${dir.name} - Litmus`);
+
+	// TODO maybe can get rid of the de-caching issue by always restarting the child process/BrowserWindow
+	// TODO Investigate requireTaskPool
+	mainWindow.webContents.send("testrun-rpc-start");
+	backgroundWorker.webContents.send("testrun-rpc-start", dir.fullPath);
 }
 
 function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
@@ -290,7 +313,7 @@ ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
 });
 
 ipcMain.on("trampoline", (e: Event, messageName: string, ...args: any[]) => {
-	mainWindow.webContents.send(messageName, ...args); // TODO validate the spread operator here
+	mainWindow.webContents.send(messageName, ...args);
 });
 
 ipcMain.on("set-menu-filter-checkbox", (e: Event, selectedFilter: TestStatus | null) => {

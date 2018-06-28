@@ -424,6 +424,11 @@ abstract class LitmusDom {
 			LitmusDom.filterAll.checked = true;
 		}
 	}
+
+	public static readonly Toolbar = {
+		openFolderButton: document.getElementById("btnOpen")! as HTMLButtonElement,
+		runAllButton: document.getElementById("btnRunAll")! as HTMLButtonElement,
+	};
 }
 
 
@@ -435,6 +440,15 @@ abstract class LitmusDom {
  });
 
 
+function onOpenClick(this: HTMLElement, ev: MouseEvent): any {
+	ipcRenderer.send("request-open-directory");
+}
+
+function onRunAllClick(this: HTMLElement, ev: MouseEvent): any {
+	ipcRenderer.send("request-runTests");
+}
+
+
 // Since DOM code can't reach in to this module (can't it? is there a way?) and refer to the event handlers,
 // we reach the other way, to the DOM, and set them ourselves
 LitmusDom.groupByDropDown.onchange = onGroupingChanged;
@@ -444,12 +458,18 @@ LitmusDom.filterPassed.onchange = onSearchChanged;
 LitmusDom.filterFailed.onchange = onSearchChanged;
 LitmusDom.filterSkipped.onchange = onSearchChanged;
 
-function fixMacAccelerator(accelerator: string): string {
-	return process.platform === 'darwin' ? accelerator.replace("Ctrl", "Cmd") : accelerator;
-}
+
+
+
+
 
 function populateTooltipAccelerators() {
-	const buttons = document.querySelectorAll("x-toolbar button")
+
+	function fixMacAccelerator(accelerator: string): string {
+		return process.platform === 'darwin' ? accelerator.replace("Ctrl", "Cmd") : accelerator;
+	}
+
+	const buttons = document.querySelectorAll("x-toolbar button");
 	for(const b of buttons) {
 		if (b.hasAttribute("data-accelerator")) {
 			let accel = b.getAttribute("data-accelerator")!;
@@ -460,4 +480,21 @@ function populateTooltipAccelerators() {
 	}
 }
 
-populateTooltipAccelerators();
+function initialiseToolbar() {
+	populateTooltipAccelerators();
+	attachToolbarHandlers();
+}
+
+function attachToolbarHandlers() {
+
+	LitmusDom.Toolbar.openFolderButton.onclick = onOpenClick;
+	document.getElementById("lnkWelcomeOpen")!.onclick = onOpenClick;
+
+	LitmusDom.Toolbar.runAllButton.onclick = onRunAllClick;
+
+	// TODO manage disabled state (requires the UI being stateful, which at the moment it's not much)
+	// TODO also want to forbid requesting test re-run while tests already being run. More statefulness
+	//LitmusDom.Toolbar.runAllButton.disabled = true;
+}
+
+initialiseToolbar();
