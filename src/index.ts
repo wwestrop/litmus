@@ -67,7 +67,7 @@ function initMainWindow() {
 		// 	scrollBounce: true,
 		// }
 
-		//icon: "",
+		icon: nativeImage.createFromPath(Path.resolve(__dirname, "res", "icons", "48x48.png")),
 		//titleBarStyle: "", // depend if macOS?
 	});
 

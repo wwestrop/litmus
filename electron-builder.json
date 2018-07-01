@@ -1,9 +1,15 @@
 {
+	"appId": "app.litmus-js.litmus",
 	"productName": "Litmus",
 	"directories": {
-		"output": "../../dist"
+		"output": "../../dist",
+		"buildResources": "../../res"
 	},
 	"win": {
-		"icon": "../../res/Litmus.ico"
+		"target": "portable"
+	},
+	"linux": {
+		"target": "AppImage",
+		"category": "Development"
 	}
 }
