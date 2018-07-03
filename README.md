@@ -43,6 +43,8 @@ The app has three "threads" of execution runnng at all times, which have the fol
 
 
 ## Changelog
+### 0.1.1
+* Linux packaging
 ### 0.1.0
 * Initial MVP. Windows only.
 * Runs Mocha tests and displays the results.
