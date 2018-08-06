@@ -70,6 +70,7 @@
     "lodash": "^4.17.10",
     "mocha": "^4.1.0",
     "react": "^16.3.2",
+    "react-animate-height": "^2.0.3",
     "react-dom": "^16.3.2",
     "stdlib": "^0.6.0"
   }

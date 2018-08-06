@@ -2,6 +2,7 @@ import ReactDOM = require('react-dom');
 import React = require('react');
 import { TreeNode } from './renderer';
 import { TestCaseOutcome } from '../../ts/types/TestCaseOutcome';
+import AnimateHeight from 'react-animate-height';
 
 
 interface ITreeTopLevel {
@@ -65,25 +66,27 @@ class Node extends React.Component<INode, INodeState> {
 			: null;
 
 		return (
-			<x-node class={cssClassName}>
-				<x-nodeHeader onClick={(e: React.SyntheticEvent<any>) => this.onNodeClick(e)}>
-					<x-twistie />
-					<x-statusIcon />
-					<x-nodeTitle title={failureInfoMsg}>{nodeTitle}</x-nodeTitle>
-				</x-nodeHeader>
+			<AnimateHeight duration={150} height={this.state.expanded ? 'auto' : 24} easing={'ease-in-out'}>
+				<x-node class={cssClassName}>
+					<x-nodeHeader onClick={(e: React.SyntheticEvent<any>) => this.onNodeClick(e)}>
+						<x-twistie />
+						<x-statusIcon />
+						<x-nodeTitle title={failureInfoMsg}>{nodeTitle}</x-nodeTitle>
+					</x-nodeHeader>
 
-				{!isSuite(this.props.nodeData) && this.props.nodeData.FailureInfo
-					? <x-nodeDetails>
-						{this.props.nodeData.FailureInfo.message}
-						<br />
-						{this.props.nodeData.FailureInfo.stackTrace}
-					</x-nodeDetails>
-					: []}
+					{!isSuite(this.props.nodeData) && this.props.nodeData.FailureInfo
+						? <x-nodeDetails>
+							{this.props.nodeData.FailureInfo.message}
+							<br />
+							{this.props.nodeData.FailureInfo.stackTrace}
+						</x-nodeDetails>
+						: []}
 
-				{isSuite(this.props.nodeData) ? this.props.nodeData.children.map(suite => <Node nodeData={suite} />) : []}
+					{isSuite(this.props.nodeData) ? this.props.nodeData.children.map(suite => <Node nodeData={suite} />) : []}
 
-				{isSuite(this.props.nodeData) ? this.props.nodeData.data.map(test => <Node nodeData={test} />) : []}
-			</x-node>
+					{isSuite(this.props.nodeData) ? this.props.nodeData.data.map(test => <Node nodeData={test} />) : []}
+				</x-node>
+			</AnimateHeight>
 		);
 	}
 

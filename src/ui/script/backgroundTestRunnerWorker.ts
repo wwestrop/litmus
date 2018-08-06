@@ -3,8 +3,7 @@ import { LitmusContext } from '../../ts/types/LitmusContext';
 import { Directory } from '../../../lib/LibFs/Fs';
 import { RunnerFactory } from '../../ts/logic/RunnerFactory';
 import { MochaTestAdapter } from '../../ts/mocha/MochaTestAdapter';
-import { TestsNotDiscoveredException } from '../../ts/exceptions/TestsNotDiscoveredException';
-import { prependListener } from 'cluster';
+import { TestsNotDiscoveredException } from '../../ts/exceptions/TestsNotDiscoveredException'
 
 
 const runnerFactory = new RunnerFactory([new MochaTestAdapter()]);

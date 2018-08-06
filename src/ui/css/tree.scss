@@ -19,8 +19,7 @@ x-node {
 	overflow-x: auto;
 	overflow-y: hidden;
 	min-height: 24px;
-	transition: height 0.15s; /* TODO doesn't work because of auto-values */
-	height: 24px;
+	height: auto;
 	font-size: 11pt;
 }
 
@@ -29,7 +28,6 @@ x-nodeHeader {
 	line-height: 24px;
 	display: block;
 	position: relative;
-	/*left: -16px; To counteract the padding that is meant for the content */
 	overflow: hidden;
 }
 
@@ -43,10 +41,6 @@ x-nodeDetails {
 	border-radius: 5px;
 	margin-left: 45px;
 	margin-right: 45px;
-}
-
-x-node.expanded {
-	height: auto;
 }
 
 x-node > x-nodeHeader > x-twistie {
