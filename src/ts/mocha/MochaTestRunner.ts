@@ -4,7 +4,7 @@ import { TestRun } from '../types/TestRun';
 import { ITest, ISuite, IHook } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
-import { Observer, Observable } from '../../../lib/LibObservable/Observable{T}';
+import { Observer, Observable } from '../../../lib/LibObservable/Observable(T)';
 import * as Fs from 'fs';
 import * as Path from 'path';
 import { Directory } from '../../../lib/LibFs/Fs';

@@ -12,7 +12,7 @@ export class KeywordSamplingFileLocatorStrategy implements IFileLocatorStrategy 
 	/** @param keywords  The words to watch out for */
 	/** @param threshold The number of times ones of the keywords should appear, for us to
 	 *                   have confidence that this file should be consumed. */
-	constructor(keywords: string[], private readonly threshold: number = 3) {
+	constructor(keywords: string[], private readonly threshold: number = 2) {
 		this.matchers = keywords.map(k => new RegExp(`\\b${k}\\b`, "g"));
 	}
 

@@ -7,7 +7,7 @@ export class Observable<T> {
 	/** @param callback Called as each new value is delivered
 	 *  @param completedCallback Called when all available values have been exhausted */
 	subscribe(callback: (value: T) => void, completedCallback?: () => void) {
-		let observer: Observer<T> = new Observer<T>(this, callback, completedCallback);
+		const observer: Observer<T> = new Observer<T>(callback, completedCallback);
 		this.generatorFunc(observer);
 	}
 
@@ -18,7 +18,6 @@ export class Observer<T> {
 	private _completed = false;
 
 	constructor(
-		private readonly observable: Observable<T>,
 		private readonly callback: (value: T) => void,
 		private readonly completedCallback?: () => void) {
 	}

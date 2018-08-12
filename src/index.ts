@@ -312,7 +312,7 @@ ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
 	mainWindow.webContents.send("update-test-results", testrunJson); // TODO not sync - out of order messages?
 });
 
-ipcMain.on("trampoline", (e: Event, messageName: string, ...args: any[]) => {
+ipcMain.on("trampoline", (_e: Event, messageName: string, ...args: any[]) => {
 	mainWindow.webContents.send(messageName, ...args);
 });
 

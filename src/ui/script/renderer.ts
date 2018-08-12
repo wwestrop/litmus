@@ -289,7 +289,7 @@ function filterTest(t: TestCaseOutcome): boolean {
 	if (searchText) {
 		const textSearchFunction = (t: TestCaseOutcome) => {
 			// TODO this assumes these two grouping keys always present, on every testrunner framework
-			// TODO also assumes we want to fitler on everything, even if it may not be visible on screen. Do we?
+			// TODO also assumes we want to filter on everything, even if it may not be visible on screen. Do we?
 			return t.TestCase.displayName.toLowerCase().includes(searchText)
 				|| t.TestCase.groupingKeys["File"].some(k => k.toLowerCase().includes(searchText))
 				|| t.TestCase.groupingKeys["Suite"].some(k => k.toLowerCase().includes(searchText));
@@ -315,7 +315,7 @@ function filterTree<T>(tree: TreeNode<T>[], filterFunc: (t: T) => boolean): Tree
 	// Filter out all the tests. Need to remove any nodes where all their children have been filtered out
 	const filtered = tree.map(t => filterNode(t, filterFunc));
 
-	// This can leave useless branches on the tree, which now have nothnig in them - clean this up
+	// This can leave useless branches on the tree, which now have nothing in them - clean this up
 	const fakeRoot = new TreeNode<T>("", []);
 	fakeRoot.children = filtered;
 	pruneTree(fakeRoot);
@@ -347,10 +347,6 @@ function pruneTree<T>(node: TreeNode<T>): void {
 	node.children = node.children.filter(c => c.children.length > 0 || c.data.length > 0);
 }
 
-function hasDescendants<T>(node: TreeNode<T>): boolean {
-	return node.children.every(c => hasDescendants(c))
-		&& node.data.length > 0;
-}
 
 
 

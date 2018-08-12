@@ -1,6 +1,6 @@
 import { TestRun } from '../types/TestRun';
 import { LitmusContext } from '../types/LitmusContext';
-import { Observable } from '../../../lib/LibObservable/Observable{T}';
+import { Observable } from '../../../lib/LibObservable/Observable(T)';
 
 export interface ITestRunner {
 
@@ -9,7 +9,7 @@ export interface ITestRunner {
 	// Or should it not be a lifecycle method, and the runner has to store its
 	// own state of whether it's been run or not?
 	// Matter of fact, why do I even want to separate out the TestAdapter factory,
-	// from the thing that actually runs the tests? 
+	// from the thing that actually runs the tests?
 
 	// The 'Adapter's live forever, and server only to say, "yes, Mocha supports this folder, here's the runner for it"
 	// The `RunnerFactory` - is really just wrapping up a collection of these
