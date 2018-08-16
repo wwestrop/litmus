@@ -76,10 +76,10 @@
 		<x-filterBar>
 			<span>Show:&nbsp;</span>
 			<x-buttonGroup>
-				<input type="radio" name="testStatusFilter" id="rStatusFilterAll" checked /><label for="rStatusFilterAll">All</label>
-				<input type="radio" name="testStatusFilter" id="rStatusFilterPassed" /><label for="rStatusFilterPassed">Passed</label>
-				<input type="radio" name="testStatusFilter" id="rStatusFilterFailed" /><label for="rStatusFilterFailed">Failed</label>
-				<input type="radio" name="testStatusFilter" id="rStatusFilterSkipped" /><label for="rStatusFilterSkipped">Skipped</label>
+				<input type="radio" name="testStatusFilter" id="rStatusFilterAll" checked /><label for="rStatusFilterAll" title="View all tests" data-accelerator="Ctrl+1">All</label>
+				<input type="radio" name="testStatusFilter" id="rStatusFilterPassed" /><label for="rStatusFilterPassed" title="View passed tests" data-accelerator="Ctrl+2">Passed</label>
+				<input type="radio" name="testStatusFilter" id="rStatusFilterFailed" /><label for="rStatusFilterFailed" title="View failed tests" data-accelerator="Ctrl+3">Failed</label>
+				<input type="radio" name="testStatusFilter" id="rStatusFilterSkipped" /><label for="rStatusFilterSkipped" title="View skipped tests" data-accelerator="Ctrl+4">Skipped</label>
 			</x-buttonGroup>
 			&nbsp;&nbsp;&nbsp;
 			<span>Group by:&nbsp;</span> <select id="groupByDropdown">
@@ -88,7 +88,7 @@
 				<option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
 			</select>
 			&nbsp;&nbsp;&nbsp;
-			<input id="tests-searchbox" type="search" value="Type to search…" class="placeholder"/ >
+			<input id="tests-searchbox" type="search" value="Type to search&hellip;" class="placeholder" title="Search" data-accelerator="F3"/>
 		</x-filterBar>
 
 

@@ -465,8 +465,12 @@ function populateTooltipAccelerators() {
 		return process.platform === 'darwin' ? accelerator.replace("Ctrl", "Cmd") : accelerator;
 	}
 
+	const radios = document.querySelectorAll("input[type='radio'] + label");
 	const buttons = document.querySelectorAll("x-toolbar button");
-	for(const b of buttons) {
+	const searchboxes = document.querySelectorAll("input[type='search']");
+	const all = [ ...radios, ...buttons, ...searchboxes ];
+
+	for(const b of all) {
 		if (b.hasAttribute("data-accelerator")) {
 			let accel = b.getAttribute("data-accelerator")!;
 			accel = fixMacAccelerator(accel);
