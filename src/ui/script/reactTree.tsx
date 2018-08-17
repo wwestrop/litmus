@@ -3,6 +3,8 @@ import React = require('react');
 import { TreeNode } from './renderer';
 import { TestCaseOutcome } from '../../ts/types/TestCaseOutcome';
 import AnimateHeight from 'react-animate-height';
+import { shell, remote } from 'electron';
+import { LibFs } from '../../../lib/LibFs/Fs';
 
 
 interface ITreeTopLevel {
@@ -68,7 +70,10 @@ class Node extends React.Component<INode, INodeState> {
 		return (
 			<AnimateHeight duration={150} height={this.state.expanded ? 'auto' : 24} easing={'ease-in-out'}>
 				<x-node class={cssClassName}>
-					<x-nodeHeader onClick={(e: React.SyntheticEvent<any>) => this.onNodeClick(e)}>
+					<x-nodeHeader
+						onContextMenu={(e: React.SyntheticEvent<any>) => this.onNodeRightClick(e)}
+						onClick={(e: React.SyntheticEvent<any>) => this.onNodeClick(e)}>
+
 						<x-twistie />
 						<x-statusIcon />
 						<x-nodeTitle title={failureInfoMsg}>{nodeTitle}</x-nodeTitle>
@@ -93,6 +98,79 @@ class Node extends React.Component<INode, INodeState> {
 	onNodeClick(e: React.SyntheticEvent<any>) {
 		this.setState((prev: INodeState, props: INode) => ({expanded: !prev.expanded}));
 		e.stopPropagation();
+	}
+
+	onNodeRightClick(e: React.SyntheticEvent<any>) {
+
+		const that = this;
+
+		/** Gets a test file for the shell to open. It is "representative" of the one selected in the UI,
+		 *  as e.g. when "opening" a group, rather than an individual test, we might be inferring which file to open. */
+		function getRepresentativeFile() {
+			// TODO - make "File" a constant, if this is a mandatory grouping key
+			// TODO - in the case of a "grouping" tree node (file, suite, etc), rather than a test leaf,
+			// TODO - this pick the first child as "representative"
+			//        This works when grouped by file.
+			//        Grouped by suite works too - at least in Mocha, suites cannot span files https://github.com/mochajs/mocha/issues/1413
+			//        It would give nonsensical behaviour if grouped by e.g. speed
+			//
+			// TODO - this opens the JS file. If it was a transpiled source file, find and open the original
+			const filename = !isSuite(that.props.nodeData)
+				? that.props.nodeData.TestCase.groupingKeys["File"].join(LibFs.separator)
+				: that.props.nodeData.data[0].TestCase.groupingKeys["File"].join(LibFs.separator); // TODO that assumes there is a [0]
+
+			return filename;
+		}
+
+		const menu = new remote.Menu();
+
+		menu.append(new remote.MenuItem ({
+			label: 'Run',
+			click() {
+				if (isSuite(that.props.nodeData)) {
+					// TODO Grab all child tests, or invoke runner with a filter (same as if searchbox used...............)
+					return;
+				}
+			}
+		}));
+		menu.append(new remote.MenuItem ({
+			label: 'Debug',
+			enabled: false,
+		}));
+
+		menu.append(new remote.MenuItem({type: 'separator'}));
+
+		menu.append(new remote.MenuItem ({
+			label: 'Open',
+			click() {
+				shell.openItem(getRepresentativeFile());
+			}
+		}));
+		menu.append(new remote.MenuItem ({
+			label: 'Open folder',
+			click() {
+				shell.showItemInFolder(getRepresentativeFile());
+			}
+		}));
+		menu.append(new remote.MenuItem ({
+			label: 'View coverage',
+			enabled: false,
+		}));
+		menu.append(new remote.MenuItem ({
+			label: 'Skip',
+			enabled: false,
+		}));
+
+		menu.append(new remote.MenuItem({type: 'separator'}));
+
+		menu.append(new remote.MenuItem ({
+			label: 'Properties',
+			enabled: false,
+		}));
+
+		e.stopPropagation();
+
+		menu.popup({});
 	}
 }
 

@@ -33,6 +33,12 @@ npm run test
 ### Hanging builds
 This unfortunately sometimes happens 😭. This can require multiple retries, and if that doesn't work, try removing the `.cache` directory and running `npm run build` again.
 
+### Packaging for distribution
+```
+npm run pack
+```
+This command will produce a distributable package suitable for whichever operating system the command is being run on (`EXE`, `DMG`, or `AppImage`)
+
 ## Architechture overview
 Limtus is written in Typescript, and built upon Electron.
 
