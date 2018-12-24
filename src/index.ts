@@ -177,6 +177,29 @@ function initMainMenu() {
 	viewMenuContents.append(new MenuItem({
 		type: "separator",
 	}));
+	viewMenuContents.append(new MenuItem({
+		label: "Zoom In",
+		accelerator: "CmdOrCtrl+Shift+Plus",						// TODO bug in Electron makes this appear as Ctrl+Shift+=
+		click: () => {
+			mainWindow.webContents.getZoomFactor(f => {
+				mainWindow.webContents.setZoomFactor(f + 0.1);
+			});
+		},
+	}));
+	viewMenuContents.append(new MenuItem({
+		label: "Zoom Out",
+		accelerator: "CmdOrCtrl+Shift+-",
+		click: () => {
+			mainWindow.webContents.getZoomFactor(f => {
+				let newZoomFactor = f - 0.1;
+				newZoomFactor = newZoomFactor <= 0 ? f : newZoomFactor;
+				mainWindow.webContents.setZoomFactor(newZoomFactor);
+			});
+		},
+	}));
+	viewMenuContents.append(new MenuItem({
+		type: "separator",
+	}));
 	if (devMode) {
 		viewMenuContents.append(new MenuItem({
 			label: "Developer tools",
