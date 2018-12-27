@@ -149,6 +149,7 @@ x-toolbar {
 		}
 
 		input[type="radio"]:disabled + label {
+			cursor: not-allowed;
 			opacity: 0.3;
 		}
 
@@ -192,12 +193,20 @@ x-toolbar {
 		vertical-align: middle;
 		height: #{$toolbarHeight - 2 * $toolbarPadding};
 
-		&:hover {
-			background-color: mix(#fff, $toolbarColour, 10%);
+		&:enabled {
+			&:hover {
+				background-color: mix(#fff, $toolbarColour, 10%);
+			}
+
+			&:active {
+				background-color: mix(#000, $toolbarColour, 10%);
+			}
 		}
 
-		&:active {
-			background-color: mix(#000, $toolbarColour, 10%);
+		&:disabled {
+			cursor: not-allowed;		// TODO you don't really see this cursor, it may not be "conventional"
+										// Could turn on it's head and use hand cursor for interactable things, regular cursor otherwise
+			opacity: 0.3;
 		}
 
 		img {
