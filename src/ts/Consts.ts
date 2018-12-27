@@ -1,0 +1,1 @@
+export const DEV_MODE = process.env["LITMUS_DEV"] !== undefined && process.env["LITMUS_DEV"] !== "0";

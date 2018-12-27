@@ -8,6 +8,7 @@ import * as Path from 'path';
 import { TestRun } from './ts/types/TestRun';
 import { TestStatus } from "./ts/types/TestStatus";
 import * as KbShortcuts from 'electron-localshortcut';
+import { DEV_MODE } from './ts/Consts';
 
 /*export*/ let mainWindow: BrowserWindow; // so other processes can poke at it (eg when runner has sth to report, poke in a message via its webcontents, set its progressbar from the main thread - shoulg that win be responsible for setting its own progress? probably. would invilve an extra RPC call though)
 let backgroundWorker: BrowserWindow;
@@ -43,15 +44,13 @@ const menus = {
 };
 
 
-const devMode = process.env["LITMUS_DEV"] !== undefined && process.env["LITMUS_DEV"] !== "0";
-
 app.on("ready", initMainWindow);
 
 function initMainWindow() {
 
 	initMainMenu();
 
-	backgroundWorker = new BrowserWindow({show: devMode, closable: false});
+	backgroundWorker = new BrowserWindow({show: DEV_MODE, closable: false});
 	backgroundWorker.loadURL(`file://${__dirname}/ui/backgroundTestRunnerWorker.html`);
 
 	mainWindow = new BrowserWindow({
@@ -63,7 +62,7 @@ function initMainWindow() {
 		backgroundColor: "#6F719D", // TODO factor colour from SASS/CSS somehow?
 		show: true,
 		// webPreferences: {
-		// 	devTools: devMode,
+		// 	devTools: DEV_MODE,
 		// 	scrollBounce: true,
 		// }
 
@@ -94,7 +93,7 @@ function initMainWindow() {
 	// 	}
 	// });
 
-	if (devMode) {
+	if (DEV_MODE) {
 		mainWindow.webContents.openDevTools();
 		backgroundWorker.webContents.openDevTools();
 	}
@@ -200,7 +199,7 @@ function initMainMenu() {
 	viewMenuContents.append(new MenuItem({
 		type: "separator",
 	}));
-	if (devMode) {
+	if (DEV_MODE) {
 		viewMenuContents.append(new MenuItem({
 			label: "Developer tools",
 			accelerator: "F12",
