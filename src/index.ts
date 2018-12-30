@@ -1,11 +1,6 @@
 import { app, BrowserWindow, Menu, MenuItem, dialog, nativeImage, ipcMain, shell } from "electron";
-import { File, Directory } from '../lib/LibFs/Fs';
-import { RunnerFactory } from './ts/logic/RunnerFactory';
-import { MochaTestAdapter } from "./ts/mocha/MochaTestAdapter";
-import { TestsNotDiscoveredException } from './ts/exceptions/TestsNotDiscoveredException';
-import { prototype } from "events";
+import { Directory } from '../lib/LibFs/Fs';
 import * as Path from 'path';
-import { TestRun } from './ts/types/TestRun';
 import { TestStatus } from "./ts/types/TestStatus";
 import * as KbShortcuts from 'electron-localshortcut';
 import { DEV_MODE } from './ts/Consts';
@@ -288,23 +283,23 @@ function initMainMenu() {
 	Menu.setApplicationMenu(menuBar);
 }
 
-ipcMain.on("request-open-directory", (e: Event, testrunJson: string) => {
+ipcMain.on("request-open-directory", (e: Electron.Event, testrunJson: string) => {
 	openDirectory();
 });
 
-ipcMain.on("open.disabled", (e: Event, disabled: boolean) => {
+ipcMain.on("open.disabled", (e: Electron.Event, disabled: boolean) => {
 	menus.fileOpenFolder.enabled = !disabled;
 });
 
-ipcMain.on("runAll.disabled", (e: Event, disabled: boolean) => {
+ipcMain.on("runAll.disabled", (e: Electron.Event, disabled: boolean) => {
 	menus.testsRunAll.enabled = !disabled;
 });
 
-ipcMain.on("runVisible.disabled", (e: Event, disabled: boolean) => {
+ipcMain.on("runVisible.disabled", (e: Electron.Event, disabled: boolean) => {
 	menus.testsRunVisible.enabled = !disabled;
 });
 
-ipcMain.on("stop.disabled", (e: Event, disabled: boolean) => {
+ipcMain.on("stop.disabled", (e: Electron.Event, disabled: boolean) => {
 	menus.testsStop.enabled = !disabled;
 });
 
@@ -350,7 +345,7 @@ function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
 }
 
 
-ipcMain.on("setProgressBar", (e: Event, progress: number, progbarState: Electron.ProgressBarOptions) => {
+ipcMain.on("setProgressBar", (e: Electron.Event, progress: number, progbarState: Electron.ProgressBarOptions) => {
 	mainWindow.setProgressBar(progress, progbarState);
 });
 
@@ -359,7 +354,7 @@ const passedTaskbarOverlay = nativeImage.createFromPath(Path.resolve(__dirname, 
 
 // TODO ICKY string. But multiple serialsiation roundtrips going on here
 // to communciate from a hidden processing window to the main window
-ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
+ipcMain.on("update-test-results", (e: Electron.Event, testrunJson: string) => {
 
 	// TODO to avoid lots of parsing and serialisation on large test runs - ship off to the UI only the latest test run??
 	const failed = (<any>testrunJson).IndividualTestResults.some((r: any) => r.Result === "Failed");
@@ -372,11 +367,11 @@ ipcMain.on("update-test-results", (e: Event, testrunJson: string) => {
 	mainWindow.webContents.send("update-test-results", testrunJson); // TODO not sync - out of order messages?
 });
 
-ipcMain.on("trampoline", (_e: Event, messageName: string, ...args: any[]) => {
+ipcMain.on("trampoline", (_e: Electron.Event, messageName: string, ...args: any[]) => {
 	mainWindow.webContents.send(messageName, ...args);
 });
 
-ipcMain.on("set-menu-filter-checkbox", (e: Event, selectedFilter: TestStatus | null) => {
+ipcMain.on("set-menu-filter-checkbox", (e: Electron.Event, selectedFilter: TestStatus | null) => {
 
 	let menuItem: MenuItem;
 	switch (selectedFilter) {
