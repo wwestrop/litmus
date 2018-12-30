@@ -292,6 +292,22 @@ ipcMain.on("request-open-directory", (e: Event, testrunJson: string) => {
 	openDirectory();
 });
 
+ipcMain.on("open.disabled", (e: Event, disabled: boolean) => {
+	menus.fileOpenFolder.enabled = !disabled;
+});
+
+ipcMain.on("runAll.disabled", (e: Event, disabled: boolean) => {
+	menus.testsRunAll.enabled = !disabled;
+});
+
+ipcMain.on("runVisible.disabled", (e: Event, disabled: boolean) => {
+	menus.testsRunVisible.enabled = !disabled;
+});
+
+ipcMain.on("stop.disabled", (e: Event, disabled: boolean) => {
+	menus.testsStop.enabled = !disabled;
+});
+
 function openDirectory(): void {
 	dialog.showOpenDialog(
 		mainWindow,

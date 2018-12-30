@@ -375,6 +375,21 @@ abstract class LitmusDom {
 		else {
 			this.throbber.classList.remove("visible");
 		}
+
+		// TODO also, things are disabled if no project is opened 🙁
+
+		// Enables/disables the toolbar buttons visible in the window
+		this.Toolbar.openFolderButton.disabled = value;
+		this.Toolbar.runAllButton.disabled = value;
+		this.Toolbar.runVisibleButton.disabled = value;
+		this.Toolbar.stopButton.disabled = !value;
+
+		// Enables/disables the corresponsing UI that lives *OUTSIDE* of the window (menus and keyboard shortcuts)
+		// TODO bundle all these calls into one single XPC cross-process-call?
+		ipcRenderer.send("open.disabled", value);
+		ipcRenderer.send("runAll.disabled", value);
+		ipcRenderer.send("runVisible.disabled", value);
+		ipcRenderer.send("stop.disabled", !value);
 	}
 
 	private static readonly placeholder: string ="Type to search…"; // TODO really should embed in component. CBA right now
