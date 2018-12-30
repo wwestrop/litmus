@@ -15,7 +15,16 @@ let backgroundWorker: BrowserWindow;
 
 let selectedDir: Directory | null; // TODO fixing the "selected dir" state across whole app is un-Mac-like where using multiple windows in an app. But then again I want to keep it SIMPLE above all!!
 
+// TODO these menuItem references are for the *SINGLETON* UI window (so if we ever want to allow multiple windows......)
 const menus = {
+	fileOpenFolder: new MenuItem({
+		label: "Open folder…",
+		accelerator: "CmdOrCtrl+O",
+		click: () => {
+			openDirectory();
+		}
+	}),
+	//////////////////////////////////////////////////////////////
 	viewAll: new MenuItem({
 		label: "View &all tests",
 		accelerator: "CmdOrCtrl+1",
@@ -40,6 +49,31 @@ const menus = {
 		accelerator: "CmdOrCtrl+4",
 		type: "radio",
 		click: () => onFilterMenuChanged("Skipped"),
+	}),
+	//////////////////////////////////////////////////////////////
+	testsRunAll: new MenuItem({
+		label: "Run all tests",
+		accelerator: "F5",
+		enabled: false,
+		click: () => {
+			runTests(selectedDir);
+		}
+	}),
+	testsRunVisible: new MenuItem({
+		label: "Run visible tests only",
+		accelerator: "F6",
+		enabled: false,
+		click: () => {
+			dialog.showErrorBox("Not implemented", "Not implemented");
+		}
+	}),
+	testsStop: new MenuItem({
+		label: "Stop running tests",
+		enabled: false,
+		accelerator: "Esc",
+		click: () => {
+			backgroundWorker.webContents.send("request-stop");
+		}
 	}),
 };
 
@@ -137,17 +171,11 @@ function initMainMenu() {
 		]
 	}));
 
+	const fileMenuContents = new Menu();
+	fileMenuContents.append(menus.fileOpenFolder);
 	menuBar.append(new MenuItem({
 		label: "&File",
-		submenu: [
-			{
-				label: "Open folder…",
-				accelerator: "CmdOrCtrl+O",
-				click: () => {
-					openDirectory();
-				}
-			}
-		]
+		submenu: fileMenuContents,
 	}));
 
 	menuBar.append(new MenuItem({
@@ -226,22 +254,16 @@ function initMainMenu() {
 		submenu: viewMenuContents,
 	}));
 
+	const testMenuContents = new Menu();
+	testMenuContents.append(menus.testsRunAll);
+	testMenuContents.append(menus.testsRunVisible);
+	testMenuContents.append(new MenuItem({
+		type: "separator",
+	}));
+	testMenuContents.append(menus.testsStop);
 	menuBar.append(new MenuItem({
 		label: "&Test",
-		submenu: [
-			{
-				label: "Run all tests",
-				accelerator: "F5",
-				click: () => {
-					runTests(selectedDir);
-				}
-			},
-			{
-				label: "Run visible tests only",
-				accelerator: "F6",
-				enabled: false,
-			}
-		]
+		submenu: testMenuContents,
 	}));
 
 

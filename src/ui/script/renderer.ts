@@ -424,6 +424,8 @@ abstract class LitmusDom {
 	public static readonly Toolbar = {
 		openFolderButton: document.getElementById("btnOpen")! as HTMLButtonElement,
 		runAllButton: document.getElementById("btnRunAll")! as HTMLButtonElement,
+		runVisibleButton: document.getElementById("btnRunVisible")! as HTMLButtonElement,
+		stopButton: document.getElementById("btnStop")! as HTMLButtonElement,
 	};
 }
 
@@ -442,6 +444,9 @@ function onOpenClick(this: HTMLElement, ev: MouseEvent): any {
 
 function onRunAllClick(this: HTMLElement, ev: MouseEvent): any {
 	ipcRenderer.send("request-runTests");
+}
+
+function onStopClick(this: HTMLElement, ev: MouseEvent): any {
 }
 
 
@@ -491,6 +496,7 @@ function attachToolbarHandlers() {
 	document.getElementById("lnkWelcomeOpen")!.onclick = onOpenClick;
 
 	LitmusDom.Toolbar.runAllButton.onclick = onRunAllClick;
+	LitmusDom.Toolbar.stopButton.onclick = onStopClick;
 
 	// TODO manage disabled state (requires the UI being stateful, which at the moment it's not much)
 	// TODO also want to forbid requesting test re-run while tests already being run. More statefulness
