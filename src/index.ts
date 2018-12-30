@@ -1,14 +1,10 @@
 import { app, BrowserWindow, Menu, MenuItem, dialog, nativeImage, ipcMain, shell } from "electron";
-import { Directory } from '../lib/LibFs/Fs';
 import * as Path from 'path';
 import { TestStatus } from "./ts/types/TestStatus";
 import * as KbShortcuts from 'electron-localshortcut';
 import { DEV_MODE } from './ts/Consts';
 
-/*export*/ let mainWindow: BrowserWindow; // so other processes can poke at it (eg when runner has sth to report, poke in a message via its webcontents, set its progressbar from the main thread - shoulg that win be responsible for setting its own progress? probably. would invilve an extra RPC call though)
-let backgroundWorker: BrowserWindow;
-
-let selectedDir: Directory | null; // TODO fixing the "selected dir" state across whole app is un-Mac-like where using multiple windows in an app. But then again I want to keep it SIMPLE above all!!
+let mainWindow: BrowserWindow;
 
 // TODO these menuItem references are for the *SINGLETON* UI window (so if we ever want to allow multiple windows......)
 const menus = {
@@ -51,7 +47,7 @@ const menus = {
 		accelerator: "F5",
 		enabled: false,
 		click: () => {
-			runTests(selectedDir);
+			runTests();
 		}
 	}),
 	testsRunVisible: new MenuItem({
@@ -67,7 +63,7 @@ const menus = {
 		enabled: false,
 		accelerator: "Esc",
 		click: () => {
-			backgroundWorker.webContents.send("request-stop");
+			stopTests();
 		}
 	}),
 };
@@ -78,9 +74,6 @@ app.on("ready", initMainWindow);
 function initMainWindow() {
 
 	initMainMenu();
-
-	backgroundWorker = new BrowserWindow({show: DEV_MODE, closable: false});
-	backgroundWorker.loadURL(`file://${__dirname}/ui/backgroundTestRunnerWorker.html`);
 
 	mainWindow = new BrowserWindow({
 		width: 1100,
@@ -124,7 +117,6 @@ function initMainWindow() {
 
 	if (DEV_MODE) {
 		mainWindow.webContents.openDevTools();
-		backgroundWorker.webContents.openDevTools();
 	}
 
 	KbShortcuts.register("CmdOrCtrl+F", () => mainWindow.webContents.send("focusSearchBox"));
@@ -227,8 +219,7 @@ function initMainMenu() {
 			label: "Developer tools",
 			accelerator: "F12",
 			click: () => {
-				mainWindow.webContents.toggleDevTools();
-				backgroundWorker.webContents.toggleDevTools();
+				toggleDevTools();
 			}
 		}));
 	}
@@ -283,10 +274,6 @@ function initMainMenu() {
 	Menu.setApplicationMenu(menuBar);
 }
 
-ipcMain.on("request-open-directory", (e: Electron.Event, testrunJson: string) => {
-	openDirectory();
-});
-
 ipcMain.on("open.disabled", (e: Electron.Event, disabled: boolean) => {
 	menus.fileOpenFolder.enabled = !disabled;
 });
@@ -303,41 +290,20 @@ ipcMain.on("stop.disabled", (e: Electron.Event, disabled: boolean) => {
 	menus.testsStop.enabled = !disabled;
 });
 
-function openDirectory(): void {
-	dialog.showOpenDialog(
-		mainWindow,
-		{
-			properties: [ "openDirectory" ]
-		},
-		(s: string[]) => {
-			if (s) {
-				selectedDir = new Directory(s[0]);
-				runTests(selectedDir);
-			}
-		});
+function toggleDevTools() {
+	mainWindow.webContents.toggleDevTools();
 }
 
-ipcMain.on("request-runTests", () => {
-	runTests(selectedDir);
-});
+function openDirectory() {
+	mainWindow.webContents.send("request-openDirectory");
+}
 
+function runTests() {
+	mainWindow.webContents.send("request-runTests");
+}
 
-// TODO not necessary to pass the dir in everywhere. It's only ever taken from one place
-// but I like the explicitness about what parameters we're dealing with, rather than spaghetti globals
-function runTests(dir: Directory | null): void {
-
-	if (!dir) {
-		// TODO In the ideal world, the UI doesn't allow this at all
-		// TODO But that makes the UI stateful, and don't want to deal with that at this point
-		return;
-	}
-
-	mainWindow.setTitle(`${dir.name} - Litmus`);
-
-	// TODO maybe can get rid of the de-caching issue by always restarting the child process/BrowserWindow
-	// TODO Investigate requireTaskPool
-	mainWindow.webContents.send("testrun-rpc-start");
-	backgroundWorker.webContents.send("testrun-rpc-start", dir.fullPath);
+function stopTests() {
+	mainWindow.webContents.send("request-stop");
 }
 
 function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
@@ -365,10 +331,6 @@ ipcMain.on("update-test-results", (e: Electron.Event, testrunJson: string) => {
 	mainWindow.setOverlayIcon(overlayIcon, caption);
 
 	mainWindow.webContents.send("update-test-results", testrunJson); // TODO not sync - out of order messages?
-});
-
-ipcMain.on("trampoline", (_e: Electron.Event, messageName: string, ...args: any[]) => {
-	mainWindow.webContents.send(messageName, ...args);
 });
 
 ipcMain.on("set-menu-filter-checkbox", (e: Electron.Event, selectedFilter: TestStatus | null) => {

@@ -3,7 +3,8 @@ import { LitmusContext } from '../../ts/types/LitmusContext';
 import { Directory } from '../../../lib/LibFs/Fs';
 import { RunnerFactory } from '../../ts/logic/RunnerFactory';
 import { MochaTestAdapter } from '../../ts/mocha/MochaTestAdapter';
-import { TestsNotDiscoveredException } from '../../ts/exceptions/TestsNotDiscoveredException'
+import { TestsNotDiscoveredException } from '../../ts/exceptions/TestsNotDiscoveredException';
+import { parentWindow } from './parentWindow.module';
 
 
 const runnerFactory = new RunnerFactory([new MochaTestAdapter()]);
@@ -12,8 +13,11 @@ const runnerFactory = new RunnerFactory([new MochaTestAdapter()]);
 // It's just in this folder as its run by an invisible browser window
 // (to not block the main Electron process, which causes problems)
 
-ipcRenderer.on("testrun-rpc-start", (e: Event, dir: string) => {
+ipcRenderer.on("testrun-rpc-start", (e: Electron.Event, dir: string) => {
 	runTests(dir);
+});
+
+ipcRenderer.on("request-stop", (e: Electron.Event) => {
 });
 
 
@@ -64,7 +68,7 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 	}
 }
 
-/** Bounces messages to the main BrowserWindow via the electron main process */
+/** Bounces messages to the parent "UI" window via IPC */
 function trampoline(messageName: string, ...args: any[]) {
-	ipcRenderer.send("trampoline", messageName, ...args);
+	parentWindow.webContents.send(messageName, ...args);
 }

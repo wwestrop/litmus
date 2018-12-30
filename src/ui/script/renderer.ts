@@ -1,11 +1,17 @@
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, remote, BrowserWindow } from 'electron';
 import { TestRun } from '../../ts/types/TestRun';
 import { TestStatus } from '../../ts/types/TestStatus';
 import { TestCaseOutcome } from '../../ts/types/TestCaseOutcome';
 import * as reactTree from './reactTree';
 import * as statusDisplay from './statusDisplay';
 import _ = require('lodash');
+import { Directory } from '../../../lib/LibFs/Fs';
+import { DEV_MODE } from '../../ts/Consts';
 
+const currentWindow = remote.getCurrentWindow();
+const backgroundWorker = initBackroundWorker();
+
+let selectedDir: Directory | null;
 let lastRunResults: TestRun = TestRun.Empty;
 
 // TODO factor constant
@@ -38,11 +44,16 @@ ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 	pushTestState();
 });
 
+ipcRenderer.on("request-runTests", () => {
+	runTests(selectedDir);
+});
+
 ipcRenderer.on("test-run-finished", (e: Event) => {
 	LitmusDom.isBusy = false;
 });
 
-ipcRenderer.on("testrun-rpc-start", () => {
+/** Configures the UI for running tests */
+function testrunStart() {
 	removeWelcomeScreen();
 
 	// Enables the throbber
@@ -50,7 +61,7 @@ ipcRenderer.on("testrun-rpc-start", () => {
 
 	// In parallel, the background test runner host was triggered and will be providing results shortly
 	// TODO!!!!!!!!!!!!!!!! RACE CONDITIONS!!!!!!!!!!!!
-});
+}
 
 function removeWelcomeScreen() {
 	const el = document.getElementsByClassName("welcome");
@@ -452,17 +463,72 @@ abstract class LitmusDom {
 	pushTestState();
  });
 
+ipcRenderer.on("request-openDirectory", () => {
+	openDirectory();
+});
+
+function initBackroundWorker(): BrowserWindow {
+	const result = new remote.BrowserWindow({show: DEV_MODE, closable: false});
+	result.loadURL(`file://${__dirname}/backgroundTestRunnerWorker.html?parentWindowId=${currentWindow.id}`);
+	if (DEV_MODE) {
+		result.webContents.openDevTools();
+	}
+
+	return result;
+}
+
+// TODO not necessary to pass the dir in everywhere. It's only ever taken from one place
+// but I like the explicitness about what parameters we're dealing with, rather than spaghetti globals
+function runTests(dir: Directory | null): void {
+
+	if (!dir) {
+		// TODO In the ideal world, the UI doesn't allow this at all
+		// TODO But that makes the UI stateful, and don't want to deal with that at this point
+		return;
+	}
+
+	currentWindow.setTitle(`${dir.name} - Litmus`);
+
+	// TODO maybe can get rid of the de-caching issue by always restarting the child process/BrowserWindow
+	// TODO Investigate requireTaskPool
+	testrunStart();
+	backgroundWorker.webContents.send("testrun-rpc-start", dir.fullPath);
+}
+
+function stopTests() {
+	backgroundWorker.webContents.send("request-stop");
+}
+
+function openDirectory() {
+	remote.dialog.showOpenDialog(
+		currentWindow,
+		{
+			properties: [ "openDirectory" ]
+		},
+		(s: string[]) => {
+			if (s) {
+				selectedDir = new Directory(s[0]);
+				runTests(selectedDir);
+			}
+		}
+	);
+}
 
 function onOpenClick(this: HTMLElement, ev: MouseEvent): any {
-	ipcRenderer.send("request-open-directory");
+	openDirectory();
 }
 
 function onRunAllClick(this: HTMLElement, ev: MouseEvent): any {
-	ipcRenderer.send("request-runTests");
+	runTests(selectedDir);
 }
 
 function onStopClick(this: HTMLElement, ev: MouseEvent): any {
+	stopTests();
 }
+
+ipcRenderer.on("request-stop", () =>{
+	stopTests();
+});
 
 
 // Since DOM code can't reach in to this module (can't it? is there a way?) and refer to the event handlers,

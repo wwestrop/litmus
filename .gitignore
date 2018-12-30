@@ -6,3 +6,4 @@ bin/
 dist/
 .cache/
 npm-debug.log.*
+desktop.ini
