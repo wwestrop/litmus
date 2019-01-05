@@ -11,10 +11,13 @@ x-statusDisplay {
 	margin: 0 10px 0 10px;
 	display: inline-block;
 	border: 1px solid rgba(255, 255, 255, 0.1);
-	font-size: 9pt;
+	font-size: 12pt;
 	vertical-align: middle;
 	height: #{$toolbarHeight - 2 * $toolbarPadding};
 	position: relative;
+	line-height: 40px;
+	text-align: center;
+	min-width: 330px;
 
 	& .statusIcon {
 		width: 43px;
