@@ -4,10 +4,13 @@ import { Directory } from '../../../lib/LibFs/Fs';
 import { RunnerFactory } from '../../ts/logic/RunnerFactory';
 import { MochaTestAdapter } from '../../ts/mocha/MochaTestAdapter';
 import { TestsNotDiscoveredException } from '../../ts/exceptions/TestsNotDiscoveredException';
+import { ITestRunner } from '../../ts/logic/ITestRunner';
 import { parentWindow } from './parentWindow.module';
 
 
 const runnerFactory = new RunnerFactory([new MochaTestAdapter()]);
+
+let runner: ITestRunner | undefined;
 
 // TOOD this is not part of the UI
 // It's just in this folder as its run by an invisible browser window
@@ -18,6 +21,11 @@ ipcRenderer.on("testrun-rpc-start", (e: Electron.Event, dir: string) => {
 });
 
 ipcRenderer.on("request-stop", (e: Electron.Event) => {
+	if (runner)
+	{
+		runner.abort();
+		runner = undefined;
+	}
 });
 
 
@@ -25,7 +33,12 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 	const dir = new Directory(directory);
 
 	try {
-		const runner = runnerFactory.build(dir);
+		if (runner) {
+			console.warn("Attempted to run tests before the current run was stopped. Discarding");
+			return;
+		}
+
+		runner = runnerFactory.build(dir);
 
 		runner.run()
 			.subscribe(tr => {
@@ -43,6 +56,7 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 				// }
 			},
 			() => {
+				runner = undefined;
 				trampoline("test-run-finished");
 			}
 		);

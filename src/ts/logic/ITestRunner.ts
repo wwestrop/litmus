@@ -28,4 +28,6 @@ export interface ITestRunner {
 	preRun(): void;
 
 	run(ctxt?: LitmusContext): Observable<TestRun>;
+
+	abort(): void;
 }

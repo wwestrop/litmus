@@ -51,8 +51,12 @@ ipcRenderer.on("request-runTests", () => {
 	runTests(selectedDir);
 });
 
-ipcRenderer.on("test-run-finished", (e: Event) => {
+ipcRenderer.on("test-run-finished", (e: Electron.Event) => {
 	LitmusDom.isBusy = false;
+
+	// TODO This is not nice
+	// Forcibly remove the progress bar. Accounts for the case when tests are aborted partway through
+	currentWindow.setProgressBar(-1);
 });
 
 /** Configures the UI for running tests */

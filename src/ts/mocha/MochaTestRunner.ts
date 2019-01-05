@@ -1,12 +1,10 @@
 import { ITestRunner } from '../logic/ITestRunner';
 import { LitmusContext } from '../types/LitmusContext';
 import { TestRun } from '../types/TestRun';
-import { ITest, ISuite, IHook } from 'mocha';
+import { ITest, ISuite, IHook, IRunner } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
 import { Observer, Observable } from '../../../lib/LibObservable/Observable(T)';
-import * as Fs from 'fs';
-import * as Path from 'path';
 import { Directory } from '../../../lib/LibFs/Fs';
 //import "../../typings/mocha"; - works, but is emitted in the JS and breaks running under Node
 import { TestStatus } from '../types/TestStatus';
@@ -16,16 +14,24 @@ import { TestFailureInfo } from '../types/TestFailureInfo';
 import { IFileLocatorStrategy } from '../logic/common/IFileLocatorStrategy';
 import { KeywordSamplingFileLocatorStrategy, MochaKeywords } from '../logic/common/KeywordSamplingFileLocatorStrategy';
 
+
 export class MochaTestRunner implements ITestRunner {
 
 	private readonly _fileLocatorStrategy: IFileLocatorStrategy = new KeywordSamplingFileLocatorStrategy(MochaKeywords);
+
+	private mochaRunner?: IRunner;
+	private currentRun: Observable<TestRun>;
 
 	constructor (private readonly _directory: Directory) {
 	}
 
 	public run(ctxt?: LitmusContext): Observable<TestRun> {
 		// TODO since replacing rxjs with my library - it doesn't do .share()
-		return new Observable<TestRun>((observer: Observer<TestRun>) => this.createObservable(observer));
+		if (!this.currentRun) {
+			this.currentRun = new Observable<TestRun>((observer: Observer<TestRun>) => this.createObservable(observer));
+		}
+
+		return this.currentRun;
 	}
 
 	public preRun(): void {
@@ -43,8 +49,8 @@ export class MochaTestRunner implements ITestRunner {
 			mocha.addFile(f.fullPath);
 		});
 
-		const mochaRunner = mocha.run((failures: number) => observer.complete());
-		const totalTests = mochaRunner.total;
+		this.mochaRunner = mocha.run((failures: number) => observer.complete());
+		const totalTests = this.mochaRunner.total;
 
 		// TODO use linked list
 		// Right now we're sharing the array between every `TestRun`, but really we want each to be independant
@@ -52,7 +58,7 @@ export class MochaTestRunner implements ITestRunner {
 		const allResults = new Array<TestCaseOutcome>();
 		let numTestsRun: number = 0;
 
-		mochaRunner.on('fail', (t: ITest | IHook) => {
+		this.mochaRunner.on('fail', (t: ITest | IHook) => {
 			if (t.type === 'hook' && t.originalTitle === '"before each" hook') {
 				// TODO handle all the other types of hooks that could go wrong
 				// TODO add something to the error message so it's clear that a hook is failing, not the test itself
@@ -60,7 +66,7 @@ export class MochaTestRunner implements ITestRunner {
 			}
 		});
 
-		mochaRunner.on('test end', (t: ITest) => {
+		this.mochaRunner.on('test end', (t: ITest) => {
 			pushResult(t);
 		});
 
@@ -103,6 +109,12 @@ export class MochaTestRunner implements ITestRunner {
 			for (const s of suite.suites) {
 				failDescendants(s, err);
 			}
+		}
+	}
+
+	public abort(): void {
+		if (this.mochaRunner) {
+			this.mochaRunner.abort();
 		}
 	}
 

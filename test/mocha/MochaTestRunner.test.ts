@@ -35,4 +35,9 @@ describe("MochaTestRunner", () => {
 		throw "It doesn't have any tests";
 	});
 
+	it("retuns the same observable instance for every call to run", () => {
+		// Or, whatever seam I shim in around the real Mocha is only called once for real
+		throw "It doesn't have any tests";
+	});
+
 });
