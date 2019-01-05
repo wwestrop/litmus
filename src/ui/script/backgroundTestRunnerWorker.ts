@@ -30,15 +30,10 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 		runner.run()
 			.subscribe(tr => {
 				console.log(`${tr.IndividualTestResults.length} @ ${tr.Duration}s (${tr.Progress} %)`);
-				let progress = tr.Progress / 100;
-				progress = progress < 0 || progress >= 1 ? -1 : progress; // TODO do I want the progress to disappear immediately?
 
-				const progbarState = tr.NumFailed === 0 ? "normal": "error";
+				trampoline("update-test-results", tr.toJSON());
 
-				ipcRenderer.send("setProgressBar", progress, {mode: progbarState});
 
-				console.log(`>${new Date().getTime()}`);
-				ipcRenderer.send("update-test-results", tr.toJSON());
 				// TODO passing round JSON string is gross. But it's going over two process boundaries
 				// backgroundWindow -> main -> foregroundWindow
 				// TODO merge both above RPCs into one call?
@@ -53,6 +48,9 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 		);
 	}
 	catch (ex) {
+		// TODO the remote makes it much more straightforward with none of the IPC noise
+		// But makes testing those sid effects harder to test than emitted events
+		// (which themselves go via an IPC, so would have to be wrapped in a facade anyway)
 		if (ex instanceof TestsNotDiscoveredException) {
 			remote.dialog.showErrorBox(
 				"Couldn't find any tests",

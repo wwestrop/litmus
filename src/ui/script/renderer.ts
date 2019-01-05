@@ -7,6 +7,7 @@ import * as statusDisplay from './statusDisplay';
 import _ = require('lodash');
 import { Directory } from '../../../lib/LibFs/Fs';
 import { DEV_MODE } from '../../ts/Consts';
+import { setTaskbarStatus } from './taskbarStatus.module';
 
 const currentWindow = remote.getCurrentWindow();
 const backgroundWorker = initBackroundWorker();
@@ -16,7 +17,7 @@ let lastRunResults: TestRun = TestRun.Empty;
 
 // TODO factor constant
 /** Fired to update the display as new information is streamed from the test runner */
-ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
+ipcRenderer.on("update-test-results", (e: Electron.Event, f: TestRun) => {
 
 	lastRunResults = f;
 
@@ -40,6 +41,8 @@ ipcRenderer.on("update-test-results", (e: Event, f: TestRun) => {
 	}
 
 	statusDisplay.render(lastRunResults);
+
+	setTaskbarStatus(f);
 
 	pushTestState();
 });
@@ -70,7 +73,7 @@ function removeWelcomeScreen() {
 	}
 }
 
-ipcRenderer.on("focusSearchBox", (e: Event) => {
+ipcRenderer.on("focusSearchBox", (e: Electron.Event) => {
 	LitmusDom.searchBox.focus();
 	LitmusDom.searchBox.selectionStart = 0;
 	LitmusDom.searchBox.selectionEnd = LitmusDom.searchBox.value.length;
@@ -281,11 +284,11 @@ export class TreeNode<T> {
 }
 
 
-function onGroupingChanged (this: HTMLElement, a: Event): any {
+function onGroupingChanged (this: HTMLElement, a: Electron.Event): any {
 	pushTestState();
 }
 
-function onSearchChanged (this: HTMLElement, a: Event): any {
+function onSearchChanged (this: HTMLElement, a: Electron.Event): any {
 	pushTestState();
 
 	// Change menu in main process to reflect the currently selected filter
@@ -456,7 +459,7 @@ abstract class LitmusDom {
 }
 
 
- ipcRenderer.on("menu-filter-changed", (e: Event, selectedFilter: TestStatus) => {
+ ipcRenderer.on("menu-filter-changed", (e: Electron.Event, selectedFilter: TestStatus) => {
 	LitmusDom.setStatusFilter(selectedFilter);
 
 	// Re-run filtering (onchange event handler not fired when UI controls manipulated programatically)

@@ -311,28 +311,6 @@ function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
 }
 
 
-ipcMain.on("setProgressBar", (e: Electron.Event, progress: number, progbarState: Electron.ProgressBarOptions) => {
-	mainWindow.setProgressBar(progress, progbarState);
-});
-
-const failedTaskbarOverlay = nativeImage.createFromPath(Path.resolve(__dirname, "res", "failBadge_taskbar.png"));
-const passedTaskbarOverlay = nativeImage.createFromPath(Path.resolve(__dirname, "res", "passBadge_taskbar.png"));
-
-// TODO ICKY string. But multiple serialsiation roundtrips going on here
-// to communciate from a hidden processing window to the main window
-ipcMain.on("update-test-results", (e: Electron.Event, testrunJson: string) => {
-
-	// TODO to avoid lots of parsing and serialisation on large test runs - ship off to the UI only the latest test run??
-	const failed = (<any>testrunJson).IndividualTestResults.some((r: any) => r.Result === "Failed");
-
-	const overlayIcon = failed ? failedTaskbarOverlay : passedTaskbarOverlay;
-	const caption = `Tests ${failed ? "failed" : "passed"}`;
-
-	mainWindow.setOverlayIcon(overlayIcon, caption);
-
-	mainWindow.webContents.send("update-test-results", testrunJson); // TODO not sync - out of order messages?
-});
-
 ipcMain.on("set-menu-filter-checkbox", (e: Electron.Event, selectedFilter: TestStatus | null) => {
 
 	let menuItem: MenuItem;
