@@ -49,6 +49,13 @@ The app has three "threads" of execution runnng at all times, which have the fol
 
 
 ## Changelog
+### 0.1.2
+* Tests which fail during the `beforeEach` hook show up correctly
+* Cancellable test runs (keyboard shortcut `Esc`)
+* Added UI zoom control (keyboard shortcut `Ctrl`+`Shift`+`-` and `Ctrl`+`Shift`+`+`)
+* Right-click context menu added to test results tree
+* Controls showing as disabled when appropriate
+* Misc UI polish (tooltips, animation, extra keybindings, more responsive status display)
 ### 0.1.1
 * Linux packaging
 ### 0.1.0
