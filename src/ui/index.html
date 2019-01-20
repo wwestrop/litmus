@@ -34,26 +34,11 @@
 
 			<x-tabGroup class="right">
 				<input type="radio" name="topLevelTabs" id="rResultsTab" checked /><label for="rResultsTab">Results</label>
-				<x-tabContent>
-					<x-resultsPanel>
-						<x-resultsTree>
-							<div class="welcome">
-								<div class="leftColumn">
-									<img src="./img/welcome.png" />
-								</div>
-								<div class="rightColumn">
-									<div>
-										<h1>We're ready to begin testing!</h1>
-										<h2><a id="lnkWelcomeOpen">Open a project</a> to get started...</h2>
-										<div class="hint">Hint: The shortcut for this is Ctrl+O</div> <!-- TODO re-configure for OS X -->
-									</div>
-								</div>
-							</div>
-						</x-resultsTree>
-					</x-resultsPanel>
+				<x-tabContent id="resultsTab">
+					<!-- React places <x-resultsTree> and other fullscreen status pages in here -->
 				</x-tabContent>
 				<input type="radio" name="topLevelTabs" id="rCoverageTab" disabled /><label for="rCoverageTab">Coverage</label>
-				<x-tabContent>
+				<x-tabContent id="coverageTab">
 					<x-summaryPanel>
 						<h1>Summary</h1>
 						<h2>No tests run</h2>

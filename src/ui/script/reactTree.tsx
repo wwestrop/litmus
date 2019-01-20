@@ -4,11 +4,24 @@ import { TreeNode } from './renderer';
 import { TestCaseOutcome } from '../../ts/types/TestCaseOutcome';
 import AnimateHeight from 'react-animate-height';
 import { shell, remote } from 'electron';
+import { EmptyScreen } from './emptyScreen';
 import { LibFs } from '../../../lib/LibFs/Fs';
+import { ApplicationStatus } from './applicationStatus';
+const imgWelcome = require('../img/welcome.png');
+const imgNoTests = require('../img/noTestsVisible.png');
 
+
+type clickHandler = () => void;
 
 interface ITreeTopLevel {
 	treeData: TreeNode<TestCaseOutcome>[];
+}
+
+interface IAppTopLevel {
+	treeData?: TreeNode<TestCaseOutcome>[];
+	applicationStatus: ApplicationStatus;
+	openClickHandler: clickHandler;
+	resetClickHandler: clickHandler;
 }
 
 interface INode {
@@ -28,16 +41,69 @@ declare global {
 			"x-statusIcon": any;
 			"x-nodeTitle": any;
 			"x-nodeDetails": any;
+			"x-resultsTree": any;
 		}
 	}
 }
 
+/** Displays whatever is in the main section of the window, by chosing another component to delegate to */
+class AppMainContentWrapper extends React.Component<IAppTopLevel> {
+
+	render() {
+		switch (this.props.applicationStatus) {
+			case "welcome":
+				return <EmptyScreen
+					header="We're ready to begin testing!"
+					imageUrl={`../ui/${imgWelcome}`}
+					callToActionText="Open a project"
+					callToActionClicked={this.props.openClickHandler}
+					callToActionSuffix="to get started..."
+					hint="The shortcut for this is Ctrl+O" />;
+			case "idle":
+				if (this.props.treeData && this.props.treeData.length === 0) {
+					return <EmptyScreen
+						header="No tests found that match your filter"
+						imageUrl={`../ui/${imgNoTests}`}
+						callToActionPrefix="Try a different search, or"
+						callToActionText="clear your filter"
+						callToActionClicked={this.props.resetClickHandler} />;
+				}
+				else {
+					if (this.props.treeData) {
+						return <TreeTopLevel treeData={this.props.treeData} />;
+					}
+
+					// TODO is this a valid case?
+					console.info("No test result data, showing empty screen");
+					return <></>;
+				}
+			case "testing":
+				// TODO if testing and treeData.length === 0, show throbber until tests resolved
+			case "stopping":
+				if (this.props.treeData) {
+					return <TreeTopLevel treeData={this.props.treeData} />;
+				}
+				else {
+					// TODO is this a valid case?
+					// Could show the "empty tests" page here - but that will show when a run begins, before the first result comes back
+					console.info("No test result data, showing empty screen");
+					return <></>;
+				}
+			default:
+				// TODO fighting with linter settings. Really want to exhautstively check the switch, rather than require default
+				throw new Error();
+		}
+	}
+
+}
+
 class TreeTopLevel extends React.Component<ITreeTopLevel> {
+
 	render() {
 		return (
-			<div className="treeWrapper">
+			<x-resultsTree>
 				{this.props.treeData.map(d => <Node nodeData={d} />)}
-			</div>
+			</x-resultsTree>
 		);
 	}
 }
@@ -181,12 +247,22 @@ function isSuite(input: TreeNode<TestCaseOutcome> | TestCaseOutcome): input is T
 	return (input as any).children !== undefined;
 }
 
-
 // TODO - shove all the tree grouping, treeNode converting stuff within this file too, out of main renderer.ts
 // Allow us to chop and change the view here too - grouping key, selected filter-option, free-text search, etc
-export function render(testResults: TreeNode<TestCaseOutcome>[]) {
-	const area = document.getElementsByTagName("x-resultstree")[0];
+
+// TODO don't like passing every single handler we'll ever want into this method
+// It's essentially static anyway, set once and forget forever
+export function render(applicationStatus: ApplicationStatus,
+                       openHandler: clickHandler,
+                       resetHandler: clickHandler,
+                       testResults?: TreeNode<TestCaseOutcome>[]) {
+
+	const area = document.getElementById("resultsTab");
 	ReactDOM.render(
-		<TreeTopLevel treeData={testResults}/>,
+		(<AppMainContentWrapper
+			treeData={testResults}
+			applicationStatus={applicationStatus}
+			openClickHandler={openHandler}
+			resetClickHandler={resetHandler} />),
 		area);
 }

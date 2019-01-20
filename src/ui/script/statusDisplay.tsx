@@ -1,10 +1,12 @@
 import ReactDOM = require('react-dom');
 import React = require('react');
 import { TestRun } from '../../ts/types/TestRun';
+import { ApplicationStatus } from './applicationStatus';
 
 
 interface IStatusDisplay {
 	testRun: TestRun;
+	applicationStatus: ApplicationStatus;
 }
 
 declare global {
@@ -17,14 +19,23 @@ declare global {
 }
 
 class StatusDisplay extends React.Component<IStatusDisplay> {
+
 	render() {
+		if (this.props.applicationStatus === "welcome") {
+			return <><b>Status: </b>No project loaded</>;
+		}
+
+		if (this.props.applicationStatus === "stopping") {
+			return <>Stopping</>;
+		}
+
 		const overallStatus_CssClass = this.props.testRun.NumFailed > 0 ? "failed" : "passed";
 		const overallStatus_display = this.props.testRun.NumFailed > 0 ? "Failed" : "Passed";
 		const durationSeconds = (this.props.testRun.Duration / 1000).toFixed(1);
 
 		return (
 			<>
-				<ProgressBar testRun={this.props.testRun}/>
+				<ProgressBar testRun={this.props.testRun} applicationStatus={this.props.applicationStatus} />
 				<table style={{fontSize: '10pt', height: '100%'}}>
 					<tbody>
 						<tr>
@@ -56,7 +67,7 @@ class StatusDisplay extends React.Component<IStatusDisplay> {
 }
 
 /** Micro-widget displaying a breakdown of the test numbers by pass/fail/skipped (the format differs if any failed or not) */
-class StatusNumberDetails extends React.Component<IStatusDisplay> {
+class StatusNumberDetails extends React.Component<{testRun: TestRun}> {
 	render() {
 		if (this.props.testRun.NumFailed === 0) {
 			return (
@@ -78,7 +89,7 @@ class ProgressBar extends React.Component<IStatusDisplay> {
 	render() {
 		const percentage = this.props.testRun.Progress;
 		const overallStatus_CssClass = this.props.testRun.NumFailed > 0 ? "failed" : "passed";
-		const opacity = percentage === 0 || percentage === 100 ? 0 : 1;
+		const opacity = this.props.applicationStatus === "testing" ? 1 : 0;
 
 		return (
 			<x-progressBar class={overallStatus_CssClass} style={{width: `${percentage}%`, opacity: opacity}}></x-progressBar>
@@ -86,9 +97,9 @@ class ProgressBar extends React.Component<IStatusDisplay> {
 	}
 }
 
-export function render(testResults: TestRun) {
+export function render(testResults: TestRun, applicationStatus: ApplicationStatus) {
 	const area = document.getElementsByTagName("x-statusDisplay")[0];
 	ReactDOM.render(
-		<StatusDisplay testRun={testResults} />,
+		<StatusDisplay testRun={testResults} applicationStatus={applicationStatus} />,
 		area);
 }

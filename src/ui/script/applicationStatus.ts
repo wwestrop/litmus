@@ -1,0 +1,1 @@
+export type ApplicationStatus = "welcome" | "idle" | "testing" | "stopping";

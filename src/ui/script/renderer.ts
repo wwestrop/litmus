@@ -8,12 +8,15 @@ import _ = require('lodash');
 import { Directory } from '../../../lib/LibFs/Fs';
 import { DEV_MODE } from '../../ts/Consts';
 import { setTaskbarStatus } from './taskbarStatus.module';
+import { ApplicationStatus } from './applicationStatus';
 
 const currentWindow = remote.getCurrentWindow();
 const backgroundWorker = initBackroundWorker();
 
 let selectedDir: Directory | null;
 let lastRunResults: TestRun = TestRun.Empty;
+
+let applicationStatus: ApplicationStatus = "welcome";
 
 // TODO factor constant
 /** Fired to update the display as new information is streamed from the test runner */
@@ -40,8 +43,6 @@ ipcRenderer.on("update-test-results", (e: Electron.Event, f: TestRun) => {
 		LitmusDom.groupByDropDown.onchange = onGroupingChanged;
 	}
 
-	statusDisplay.render(lastRunResults);
-
 	setTaskbarStatus(f);
 
 	pushTestState();
@@ -57,24 +58,19 @@ ipcRenderer.on("test-run-finished", (e: Electron.Event) => {
 	// TODO This is not nice
 	// Forcibly remove the progress bar. Accounts for the case when tests are aborted partway through
 	currentWindow.setProgressBar(-1);
+	applicationStatus = "idle";
+	pushTestState();
 });
 
 /** Configures the UI for running tests */
 function testrunStart() {
-	removeWelcomeScreen();
+	applicationStatus = "testing";
 
 	// Enables the throbber
 	LitmusDom.isBusy = true;
 
 	// In parallel, the background test runner host was triggered and will be providing results shortly
 	// TODO!!!!!!!!!!!!!!!! RACE CONDITIONS!!!!!!!!!!!!
-}
-
-function removeWelcomeScreen() {
-	const el = document.getElementsByClassName("welcome");
-	if (el.length > 0) {
-		el[0].remove();
-	}
 }
 
 ipcRenderer.on("focusSearchBox", (e: Electron.Event) => {
@@ -225,7 +221,11 @@ function pushTestState() {
 
 	const filtered = filterTree(convertedForReact, filterTest);
 
-	reactTree.render(filtered);
+	reactTree.render(applicationStatus, <any>onOpenClick, <any>onResetFilterClick, filtered);
+	statusDisplay.render(lastRunResults, applicationStatus);
+
+	// Change menu in main process to reflect the currently selected filter
+	ipcRenderer.send("set-menu-filter-checkbox", LitmusDom.getStatusFilter());
 }
 
 function getSelectedGroupingKey(): string {
@@ -288,15 +288,12 @@ export class TreeNode<T> {
 }
 
 
-function onGroupingChanged (this: HTMLElement, a: Electron.Event): any {
+function onGroupingChanged (this: GlobalEventHandlers, ev: Event): any {
 	pushTestState();
 }
 
-function onSearchChanged (this: HTMLElement, a: Electron.Event): any {
+function onSearchChanged (this: GlobalEventHandlers, a: Electron.Event): any {
 	pushTestState();
-
-	// Change menu in main process to reflect the currently selected filter
-	ipcRenderer.send("set-menu-filter-checkbox", LitmusDom.getStatusFilter());
 }
 
 /** Looks at the options on the UI and determines if a given test should be visible, given the options selected. */
@@ -504,6 +501,9 @@ function runTests(dir: Directory | null): void {
 
 function stopTests() {
 	backgroundWorker.webContents.send("request-stop");
+
+	applicationStatus = "stopping";
+	pushTestState();
 }
 
 function openDirectory() {
@@ -521,15 +521,22 @@ function openDirectory() {
 	);
 }
 
-function onOpenClick(this: HTMLElement, ev: MouseEvent): any {
+function onOpenClick(this: GlobalEventHandlers, ev: MouseEvent): any {
 	openDirectory();
 }
 
-function onRunAllClick(this: HTMLElement, ev: MouseEvent): any {
+function onResetFilterClick(this: GlobalEventHandlers, ev: MouseEvent): any {
+	LitmusDom.setStatusFilter(null);
+	LitmusDom.searchBox.value = "";
+
+	pushTestState();
+}
+
+function onRunAllClick(this: GlobalEventHandlers, ev: MouseEvent): any {
 	runTests(selectedDir);
 }
 
-function onStopClick(this: HTMLElement, ev: MouseEvent): any {
+function onStopClick(this: GlobalEventHandlers, ev: MouseEvent): any {
 	stopTests();
 }
 
@@ -581,14 +588,12 @@ function initialiseToolbar() {
 function attachToolbarHandlers() {
 
 	LitmusDom.Toolbar.openFolderButton.onclick = onOpenClick;
-	document.getElementById("lnkWelcomeOpen")!.onclick = onOpenClick;
-
 	LitmusDom.Toolbar.runAllButton.onclick = onRunAllClick;
 	LitmusDom.Toolbar.stopButton.onclick = onStopClick;
-
-	// TODO manage disabled state (requires the UI being stateful, which at the moment it's not much)
-	// TODO also want to forbid requesting test re-run while tests already being run. More statefulness
-	//LitmusDom.Toolbar.runAllButton.disabled = true;
 }
 
 initialiseToolbar();
+
+
+// Show initial onboarding welcome screen
+reactTree.render("welcome", <any>onOpenClick, <any>onResetFilterClick!);

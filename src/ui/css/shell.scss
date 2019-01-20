@@ -157,9 +157,8 @@ x-toolbar {
 			content: '';
 			display: block;
 			position: absolute;
-			left: 0; //$tabBorderWidth;
+			left: 0;
 			right: 0;
-			//width: calc(100% - 2 * #{$tabBorderWidth});
 			top: calc(#{$tabHeight} - #{$tabBorderWidth});
 			height: $toolbarShadowHeight;
 			background-color: $accentColour;
@@ -167,15 +166,17 @@ x-toolbar {
 		}
 
 		input[type="radio"] + label + x-tabContent {
-			@include insetShadow;
 			display: none;
+			@include insetShadow;
 			position: fixed;
-			top: $toolbarHeight + $filterBarHeight;
-			left: 0px;
-			background-color: $backgroundColour;
-			z-index: 9999;
+			left: 0;
+			top: $toolbarHeight + $filterBarHeight + $statusbarHeight;
+			height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight} - #{$filterBarHeight});
 			width: 100vw;
-			height: calc(100vh - #{$toolbarHeight} - #{$filterBarHeight});
+			background-color: $backgroundColour;
+			overflow-y: auto;
+			color: $textOnBackgroundColour;
+			z-index: 9999;
 		}
 
 		input[type="radio"]:checked + label + x-tabContent {
@@ -231,19 +232,6 @@ x-toolbar {
 	box-sizing: border-box;
 }*/
 
-x-resultsPanel {
-	@include insetShadow;
-	position: absolute;
-	left: 0;
-	top: 0;
-	height: calc(100vh - #{$toolbarHeight} - #{$statusbarHeight} - #{$filterBarHeight});
-	width: 100vw;
-	background-color: $backgroundColour;
-	display: block;
-	overflow-y: auto;
-	color: $textOnBackgroundColour;
-	z-index: 1000;
-}
 
 x-summaryPanel {
 	@include insetShadow;

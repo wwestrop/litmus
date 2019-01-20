@@ -42,7 +42,6 @@
 		"no-unnecessary-qualifier": true,
 		"number-literal-format": { "severity": "error" },
 		"prefer-method-signature": { "severity": "error" },
-		"prefer-template": { "severity": "error" },
 		"semicolon": { "severity": "error" }
 	}
 }
