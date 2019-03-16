@@ -1,4 +1,5 @@
 ﻿@import 'variables.scss';
+@import 'mixins.scss';
 
 
 html {
@@ -36,24 +37,16 @@ input[type="text"] {
 
 
 throbber-shell2 {
+	@include throbber;
 	width: 24px;
 	height: 24px;
 	position: relative;
 	left: 10px;
 	top: 7px;
-	border-left: 2px solid $brandColour;
-	border-top: 2px solid $brandColour;
-	border-radius: 99999px;
-	animation: spin 0.6s linear infinite;
 	display: none;
 
 	&.visible {
 		display: inline-block;
-	}
-}
-@keyframes spin {
-	100% {
-		transform: rotate(360deg);
 	}
 }
 
@@ -381,6 +374,7 @@ x-markerBanner {
 	padding: 10px 90px 10px 90px;
 	text-align: center;
 	text-transform: capitalize;
+	pointer-events: none;
 }
 
 .welcome {

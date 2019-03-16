@@ -1,4 +1,6 @@
 @import 'variables.scss';
+@import 'mixins.scss';
+
 
 x-resultsTree {
 	position: absolute;
@@ -73,6 +75,7 @@ x-node > x-nodeHeader > x-statusIcon {
 	position: absolute;
 	top: 3px;
 	left: 24px;
+	transition: background-image 0.815s, border 0.815s;
 }
 
 x-node.failed > x-nodeHeader {

@@ -73,16 +73,10 @@ export class MochaTestRunner implements ITestRunner {
 		const that = this;
 		function pushResult(t: ITest) {
 			const testDuration = t.duration || 0;
+
+			const testCase = buildTestCase(t);
+
 			const testStatus = that.getTestStatus(t);
-
-			const testCase = new TestCase();
-			testCase.displayName = t.title;
-			const hierarchy = that.constructHierarchy(t);
-			const fileName = t.file || "";
-
-			testCase.groupingKeys["Suite"] = hierarchy;
-			testCase.groupingKeys["File"] = [fileName];
-
 			const failureInfo = that.getFailureInfo(t);
 
 			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration, failureInfo));
@@ -92,6 +86,18 @@ export class MochaTestRunner implements ITestRunner {
 
 			const testRun = new TestRun(allResults, pct);
 			observer.next(testRun);
+		}
+
+		function buildTestCase(t: ITest): TestCase {
+			const testCase = new TestCase();
+			testCase.displayName = t.title;
+			const hierarchy = that.constructHierarchy(t);
+			const fileName = t.file || "";
+
+			testCase.groupingKeys["Suite"] = hierarchy;
+			testCase.groupingKeys["File"] = [fileName];
+
+			return testCase;
 		}
 
 		/** On failure of a suite hook, pushes that failure down onto the child tests too, so that
