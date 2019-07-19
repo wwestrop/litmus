@@ -28,6 +28,7 @@ ipcRenderer.on("update-test-results", (e: Electron.Event, f: TestRun) => {
 		LitmusDom.groupByDropDown.onchange = null;
 
 		const keys = getAvailableGroupingKeys(f.IndividualTestResults);
+		const selectedGroupingKey = getDesiredGroupingKey(f.IndividualTestResults);
 		LitmusDom.groupByDropDown.innerHTML = ""; // TODO people can't agree on what method is faster. Benchmark myself, if it proves an issue
 		keys.forEach(k => {
 			const kElement = document.createElement("option");
@@ -36,7 +37,6 @@ ipcRenderer.on("update-test-results", (e: Electron.Event, f: TestRun) => {
 			LitmusDom.groupByDropDown.appendChild(kElement);
 		});
 
-		const selectedGroupingKey = getDesiredGroupingKey(f.IndividualTestResults);
 		LitmusDom.groupByDropDown.value = selectedGroupingKey;
 
 		// reattach handler. TODO yuck
