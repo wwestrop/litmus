@@ -123,12 +123,20 @@ class Node extends React.Component<INode, INodeState> {
 
 		const nodeTitle = isSuite(this.props.nodeData) ? this.props.nodeData.title : this.props.nodeData.TestCase.displayName;
 
+		// TODO. Everything as below is wrong with this, plus "suite" grouping keys are never stale according to this??
+		// (really, they'd be an aggregate of whether any of their children are stale???)
+		// We can use something similar to the way results are cascaded up, but because of the recursive tree, dimmed 
+		// nodes get harder and harder to read
+		const nodeStaleness = isSuite(this.props.nodeData)
+			? ""
+			: (this.props.nodeData.IsStale ? "stale" : "");       // individual tests
+
 		// TODO - ICK! NESTED TERNARIES! MY EYES!!!! Again - rectify naming inconsistencies
 		const nodeStatus = isSuite(this.props.nodeData)         // TODO - do better than lowercasing a fixed string, make it consistent across things
 			? (this.props.nodeData.status.toLowerCase())        // sub-folders in the view (which contain more tests themselves)
 			: (this.props.nodeData.Result.toLowerCase());       // individual tests
 
-		const cssClassName = `${nodeStatus} ${this.state.expanded ? "expanded" : ""} ${isSuite(this.props.nodeData) ? "expandable" : ""}`;
+		const cssClassName = `${nodeStatus} ${this.state.expanded ? "expanded" : ""} ${isSuite(this.props.nodeData) ? "expandable" : ""} ${nodeStaleness}`;
 		const failureInfoMsg = !isSuite(this.props.nodeData) && this.props.nodeData.FailureInfo
 			? this.props.nodeData.FailureInfo.message
 			: null;
@@ -138,7 +146,8 @@ class Node extends React.Component<INode, INodeState> {
 				<x-node class={cssClassName}>
 					<x-nodeHeader
 						onContextMenu={(e: React.SyntheticEvent<any>) => this.onNodeRightClick(e)}
-						onClick={(e: React.SyntheticEvent<any>) => this.onNodeClick(e)}>
+						onClick={(e: React.SyntheticEvent<any>) => this.onNodeClick(e)}
+						onDblClick={(e: React.SyntheticEvent<any>) => this.onNodeDblClick(e)}>
 
 						<x-twistie />
 						<x-statusIcon />
@@ -163,6 +172,11 @@ class Node extends React.Component<INode, INodeState> {
 
 	onNodeClick(e: React.SyntheticEvent<any>) {
 		this.setState((prev: INodeState, props: INode) => ({expanded: !prev.expanded}));
+		e.stopPropagation();
+	}
+
+	onNodeDblClick(e: React.SyntheticEvent<any>) {
+		// TODO open file
 		e.stopPropagation();
 	}
 

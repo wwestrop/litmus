@@ -5,54 +5,125 @@ import { TestCaseOutcome } from '../../ts/types/TestCaseOutcome';
 import * as reactTree from './reactTree';
 import * as statusDisplay from './statusDisplay';
 import _ = require('lodash');
+import { LitmusRunnerEvent } from '../../ts/types/LitmusRunnerEvent';
+import { TestCase } from '../../ts/types/TestCase';
 import { Directory } from '../../../lib/LibFs/Fs';
 import { DEV_MODE } from '../../ts/Consts';
-import { setTaskbarStatus } from './taskbarStatus.module';
 import { ApplicationStatus } from './applicationStatus';
 
 const currentWindow = remote.getCurrentWindow();
 const backgroundWorker = initBackroundWorker();
 
-let selectedDir: Directory | null;
+// TODO now that we're not pushing the whole state with every run - there isn't a way to reset this 😒 - e.g. when opening new project
 let lastRunResults: TestRun = TestRun.Empty;
+
+let selectedDir: Directory | null;
 
 let applicationStatus: ApplicationStatus = "welcome";
 
 // TODO factor constant
 /** Fired to update the display as new information is streamed from the test runner */
-ipcRenderer.on("update-test-results", (e: Electron.Event, f: TestRun) => {
+ipcRenderer.on("update-test-results", (e: Event, f: LitmusRunnerEvent) => {
 
-	lastRunResults = f;
+	switch (f.type) {
+		case "TestRunStarted": {
+			setAvailableGroupingKeys(f.groupingKeys);
 
-	if (f.IndividualTestResults.length === 1) { // TODO done to avoid unnecessarily re-doing this step; find a nicer way
-		LitmusDom.groupByDropDown.onchange = null;
+			lastRunResults.markAllStale();
 
-		const keys = getAvailableGroupingKeys(f.IndividualTestResults);
-		const selectedGroupingKey = getDesiredGroupingKey(f.IndividualTestResults);
-		LitmusDom.groupByDropDown.innerHTML = ""; // TODO people can't agree on what method is faster. Benchmark myself, if it proves an issue
-		keys.forEach(k => {
-			const kElement = document.createElement("option");
-			kElement.value = k;
-			kElement.text = k;
-			LitmusDom.groupByDropDown.appendChild(kElement);
-		});
+			statusDisplay.render(lastRunResults, applicationStatus);
+			pushTestState();
 
-		LitmusDom.groupByDropDown.value = selectedGroupingKey;
+			break;
+		}
+		case "TestRunFinished": {
+			LitmusDom.isBusy = false;
+			break;
+		}
+		case "IndividualTestStarted": {
+			// TODO
+			newTestAnnounced(f.Testcase);
 
-		// reattach handler. TODO yuck
-		LitmusDom.groupByDropDown.onchange = onGroupingChanged;
+			statusDisplay.render(lastRunResults, applicationStatus);
+			pushTestState();
+
+			break;
+		}
+		case "IndividualTestFinished": {
+			merge(f.TestResult);
+
+			statusDisplay.render(lastRunResults, applicationStatus);
+			pushTestState();
+
+			break;
+		}
+		default: {
+			// TODO?
+			const x = function(o: never){};
+			//return f.type;
+		}
 	}
 
-	setTaskbarStatus(f);
-
-	pushTestState();
 });
+
+function newTestAnnounced(startedTestcase: TestCase): void {
+	// TODO Factor. Maybe into the DTO class itself (but beware of serialising non-field members). Maybe use as react key too?
+	function formKey(testcase: TestCase): string[] {
+		return [...testcase.groupingKeys["Suite"], testcase.displayName];
+	}
+
+	const wrapped_caseOutcome = new TestCaseOutcome(startedTestcase, "Running", 0, null);
+
+	const probeKey = formKey(startedTestcase);
+	//const existingTestState = lastRunResults.IndividualTestResults.find(c => isEqual(probeKey, formKey(c.TestCase)));
+	const existingTestStateIndex = lastRunResults.IndividualTestResults.findIndex(c => isEqual(probeKey, formKey(c.TestCase)));
+	if (existingTestStateIndex !== -1) {
+		// Update in-place
+		lastRunResults.IndividualTestResults[existingTestStateIndex] = wrapped_caseOutcome;
+	}
+	else {
+		lastRunResults.IndividualTestResults.push(wrapped_caseOutcome);
+	}
+}
+
+function merge(result: TestCaseOutcome): void {
+	// TODO Factor. Maybe into the DTO class itself (but beware of serialising non-field members). Maybe use as react key too?
+	function formKey(testcase: TestCase): string[] {
+		return [...testcase.groupingKeys["Suite"], testcase.displayName];
+	}
+
+	const probeKey = formKey(result.TestCase);
+	//const existingTestState = lastRunResults.IndividualTestResults.find(c => isEqual(probeKey, formKey(c.TestCase)));
+	const existingTestStateIndex = lastRunResults.IndividualTestResults.findIndex(c => isEqual(probeKey, formKey(c.TestCase)));
+	/*if (existingTestStateIndex !== -1) {*/
+		// Update in-place (THIS SHOULD ALWAYS BE THE CASE, AS TEST-START WILL HAVE CREATED THE NODE)
+		lastRunResults.IndividualTestResults[existingTestStateIndex] = result;
+	/*}*/
+}
+
+function setAvailableGroupingKeys(keys: string[]): void {
+
+	LitmusDom.groupByDropDown.onchange = null;
+	LitmusDom.groupByDropDown.innerHTML = ""; // TODO people can't agree on what method is faster. Benchmark myself, if it proves an issue
+	keys.forEach(k => {
+		const kElement = document.createElement("option");
+		kElement.value = k;
+		kElement.text = k;
+		LitmusDom.groupByDropDown.appendChild(kElement);
+	});
+
+	const selectedGroupingKey = getDesiredGroupingKey(keys);
+	LitmusDom.groupByDropDown.value = selectedGroupingKey;
+
+	// reattach handler. TODO yuck
+	LitmusDom.groupByDropDown.onchange = onGroupingChanged;
+}
 
 ipcRenderer.on("request-runTests", () => {
 	runTests(selectedDir);
 });
 
-ipcRenderer.on("test-run-finished", (e: Electron.Event) => {
+ipcRenderer.on("test-run-finished", (_e: Electron.Event) => {
 	LitmusDom.isBusy = false;
 
 	// TODO This is not nice
@@ -68,6 +139,8 @@ function testrunStart() {
 
 	// Enables the throbber
 	LitmusDom.isBusy = true;
+
+	pushTestState();
 
 	// In parallel, the background test runner host was triggered and will be providing results shortly
 	// TODO!!!!!!!!!!!!!!!! RACE CONDITIONS!!!!!!!!!!!!
@@ -235,11 +308,10 @@ function getSelectedGroupingKey(): string {
 	return currentlySelectedKey;
 }
 
-function getDesiredGroupingKey(allTestCaseOutcomes: TestCaseOutcome[]): string {
+function getDesiredGroupingKey(allGroupingKeys: string[]): string {
 
 	// TODO lots of cases for this - these need tests more than most things
-	const possibles = getAvailableGroupingKeys(allTestCaseOutcomes);
-	if (possibles.length === 0) {
+	if (allGroupingKeys.length === 0) {
 		return ""; // No option to select anything TODO empty string here sentintel value probably won't work
 	}
 
@@ -247,32 +319,15 @@ function getDesiredGroupingKey(allTestCaseOutcomes: TestCaseOutcome[]): string {
 
 	if (currentlySelectedKey === "") { // TODO empty string?
 		// User had nothing selected. Pick the default for them.
-		return possibles[0];
+		return allGroupingKeys[0];
 	}
-	else if (_.includes(possibles, currentlySelectedKey)) {
+	else if (_.includes(allGroupingKeys, currentlySelectedKey)) {
 		// Keep the users current selection
 		return currentlySelectedKey;
 	}
 	else {
 		// This new set of tests doesn't include the key we were already using (switched to diff framework maybe)
-		return possibles[0];
-	}
-}
-
-/**
- * TODO make it an explicit part of a contract somewhere somehow, that every key is present on every test result
- */
-function getAvailableGroupingKeys(allTestCaseOutcomes: TestCaseOutcome[]): string[] {
-	if (allTestCaseOutcomes.length === 0) {
-		return [];
-	}
-	else {
-		// TODO If simply presenting the internal groupingkey name on the UI, won't be great if Litmus is ever internationalised.
-		// TODO Then again, that's on the person implementing the test-runner, as the keys were designed to be flexible
-		// depending on the needs or particular features of any given test framework.
-		// Can we expect an implementor to translate their keys for every language there might be?
-		const candidateTest = allTestCaseOutcomes[0].TestCase;
-		return Object.keys(candidateTest.groupingKeys);
+		return allGroupingKeys[0];
 	}
 }
 
@@ -514,6 +569,12 @@ function openDirectory() {
 		},
 		(s: string[]) => {
 			if (s) {
+
+				// Wipe out the existing tree state
+				lastRunResults = TestRun.Empty;
+				applicationStatus = "testing";
+				pushTestState();
+
 				selectedDir = new Directory(s[0]);
 				runTests(selectedDir);
 			}

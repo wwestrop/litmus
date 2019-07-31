@@ -3,6 +3,7 @@ import * as Path from 'path';
 import { TestStatus } from "./ts/types/TestStatus";
 import * as KbShortcuts from 'electron-localshortcut';
 import { DEV_MODE } from './ts/Consts';
+import { LitmusRunnerEvent } from "./ts/types/LitmusRunnerEvent";
 
 let mainWindow: BrowserWindow;
 
@@ -310,8 +311,37 @@ function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
 	mainWindow.webContents.send("menu-filter-changed", selectedFilter);
 }
 
+ipcMain.on("setProgressBar", (_e: Electron.Event, progress: number, failed: boolean ) => {
 
-ipcMain.on("set-menu-filter-checkbox", (e: Electron.Event, selectedFilter: TestStatus | null) => {
+	const failedTaskbarOverlay = nativeImage.createFromPath(Path.resolve(__dirname, "res", "failBadge_taskbar.png"));
+	const passedTaskbarOverlay = nativeImage.createFromPath(Path.resolve(__dirname, "res", "passBadge_taskbar.png"));
+
+	const progbarState = failed ? "error" : "normal";
+
+	const overlayIcon = failed ? failedTaskbarOverlay : passedTaskbarOverlay;
+	const caption = `Tests ${failed ? "failed" : "passed"}`;
+
+	mainWindow.setOverlayIcon(overlayIcon, caption);
+
+	mainWindow.setProgressBar(progress, {mode: progbarState});
+});
+
+ipcMain.on("update-test-results", (_e: Event, lastEvent: LitmusRunnerEvent) => {
+
+	// TODO - this now serves only as a trampoline too
+	// updating the taskbar overlay subsumed with setting the taskbar progress
+
+	// TODO to avoid lots of parsing and serialisation on large test runs - ship off to the UI only the latest test run??
+
+	mainWindow.webContents.send("update-test-results", lastEvent); // TODO not sync - out of order messages?
+});
+
+
+ipcMain.on("trampoline", (_e: Electron.Event, messageName: string, ...args: any[]) => {
+	mainWindow.webContents.send(messageName, ...args);
+});
+
+ipcMain.on("set-menu-filter-checkbox", (_e: Electron.Event, selectedFilter: TestStatus | null) => {
 
 	let menuItem: MenuItem;
 	switch (selectedFilter) {

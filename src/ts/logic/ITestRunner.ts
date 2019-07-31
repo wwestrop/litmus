@@ -1,6 +1,6 @@
-import { TestRun } from '../types/TestRun';
 import { LitmusContext } from '../types/LitmusContext';
 import { Observable } from '../../../lib/LibObservable/Observable(T)';
+import { LitmusRunnerEvent } from '../types/LitmusRunnerEvent';
 
 export interface ITestRunner {
 
@@ -27,7 +27,7 @@ export interface ITestRunner {
 	// ..... or just display "Coverage: Unavailable" until a full suite run is performed
 	preRun(): void;
 
-	run(ctxt?: LitmusContext): Observable<TestRun>;
+	run(ctxt?: LitmusContext): Observable<LitmusRunnerEvent>;
 
 	abort(): void;
 }

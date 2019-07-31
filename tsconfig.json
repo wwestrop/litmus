@@ -16,6 +16,8 @@
         // "noUnusedLocals": true,
         // "noUnusedParameters": true,
         "strictNullChecks": true,
+        // "strictPropertyInitialization": true, // This is really handy. It just highlights a lot of places I'm being lax
+        // "strict": true,
         "pretty": true,
         "outDir": "bin",
         "jsx": "react"

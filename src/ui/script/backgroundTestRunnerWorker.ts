@@ -38,14 +38,50 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 			return;
 		}
 
+		let numTestsExpected: number = 0;
+		let numTestsPassed: number = 0;
+		let numTestsFailed: number = 0;
+		let numTestsSkipped: number = 0;
+
 		runner = runnerFactory.build(dir);
 
 		runner.run()
 			.subscribe(tr => {
-				console.log(`${tr.IndividualTestResults.length} @ ${tr.Duration}s (${tr.Progress} %)`);
 
-				trampoline("update-test-results", tr.toJSON());
+				switch (tr.type) {
+					case "TestRunStarted": {
+						numTestsExpected = tr.numTests;
+						numTestsPassed = 0;
+						numTestsFailed = 0;
+						numTestsSkipped = 0;
+						break;
+					}
+					case "IndividualTestFinished": {
+						if (tr.TestResult.Result === "Passed") numTestsPassed++;
+						if (tr.TestResult.Result === "Failed") numTestsFailed++;
+						if (tr.TestResult.Result === "Skipped") numTestsSkipped++;
 
+						// TODO - now my taskbar "failure badge" is only looking at tests in THE LAST RUN
+						// TODO - really if *ANY* on screen are failing........ Leave that logic to the UI? As it holds all the state?
+						// TODO - this gets hairy if a test fails. we fix and rename it. but because it's renamed, we won't be able to update it in-memory without a full re-run 😐
+						// TODO - the progression info *STILL* isnt passed to UI - its "statusDisplay" has to yet again re-build this state
+						let numTestsRun = numTestsPassed + numTestsFailed + numTestsSkipped;
+						let progress = numTestsRun / numTestsExpected;
+						progress = progress < 0 || progress >= 1 ? -1 : progress; // TODO do I want the progress to disappear immediately?
+
+						const failed = numTestsFailed > 0;
+
+						ipcRenderer.send("setProgressBar", progress, failed);
+						break;
+					}
+					default : {
+						// TODO
+						// throw "handle this, preferrably at compile-time please?";
+					}
+				}
+
+				// In all cases, forward the event onto the UI for presentation
+				ipcRenderer.send("update-test-results", tr);
 
 				// TODO passing round JSON string is gross. But it's going over two process boundaries
 				// backgroundWindow -> main -> foregroundWindow

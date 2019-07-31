@@ -78,25 +78,35 @@ x-node > x-nodeHeader > x-statusIcon {
 	transition: background-image 0.815s, border 0.815s;
 }
 
-x-node.failed > x-nodeHeader {
-	color: #FE4E4E;
-	font-weight: bold;
-}
-
-x-node.skipped > x-nodeHeader {
-	color: rgba($textOnBackgroundColour, 0.45); // dimmed out version of the usual text colour
-}
-
-x-node.failed > x-nodeHeader > x-statusIcon {
-	background-image: url('../../../res/failBadge.png');
-}
-
 x-node.passed > x-nodeHeader > x-statusIcon {
 	background-image: url('../../../res/passBadge.png');
 }
 
-x-node.skipped > x-nodeHeader > x-statusIcon {
-	background-image: url('../../../res/skipBadge.png');
+x-node.failed > x-nodeHeader {
+	color: #FE4E4E;
+	font-weight: bold;
+
+	> x-statusIcon {
+		background-image: url('../../../res/failBadge.png');
+	}
+}
+
+x-node.skipped > x-nodeHeader {
+	color: rgba($textOnBackgroundColour, 0.45); // dimmed out version of the usual text colour
+
+	> x-statusIcon {
+		background-image: url('../../../res/skipBadge.png');
+	}
+}
+
+x-node.running > x-nodeHeader > x-statusIcon {
+	@include throbber;
+	background-image: initial; // !important
+}
+
+x-node.stale {
+	opacity: 0.4;
+	transition: opacity 0.815s;
 }
 
 x-node > x-nodeHeader > x-nodeTitle {

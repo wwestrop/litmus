@@ -1,6 +1,5 @@
 import { ITestRunner } from '../logic/ITestRunner';
 import { LitmusContext } from '../types/LitmusContext';
-import { TestRun } from '../types/TestRun';
 import { ITest, ISuite, IHook, IRunner } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
@@ -13,6 +12,7 @@ import Mocha = require('mocha');
 import { TestFailureInfo } from '../types/TestFailureInfo';
 import { IFileLocatorStrategy } from '../logic/common/IFileLocatorStrategy';
 import { KeywordSamplingFileLocatorStrategy, MochaKeywords } from '../logic/common/KeywordSamplingFileLocatorStrategy';
+import { LitmusRunnerEvent, IndividualTestFinished, TestRunStarted, IndividualTestStarted, TestRunFinished } from '../types/LitmusRunnerEvent';
 
 
 export class MochaTestRunner implements ITestRunner {
@@ -20,15 +20,15 @@ export class MochaTestRunner implements ITestRunner {
 	private readonly _fileLocatorStrategy: IFileLocatorStrategy = new KeywordSamplingFileLocatorStrategy(MochaKeywords);
 
 	private mochaRunner?: IRunner;
-	private currentRun: Observable<TestRun>;
+	private currentRun: Observable<LitmusRunnerEvent>;
 
 	constructor (private readonly _directory: Directory) {
 	}
 
-	public run(ctxt?: LitmusContext): Observable<TestRun> {
+	public run(ctxt?: LitmusContext): Observable<LitmusRunnerEvent> {
 		// TODO since replacing rxjs with my library - it doesn't do .share()
 		if (!this.currentRun) {
-			this.currentRun = new Observable<TestRun>((observer: Observer<TestRun>) => this.createObservable(observer));
+			this.currentRun = new Observable<LitmusRunnerEvent>((observer: Observer<LitmusRunnerEvent>) => this.createObservable(observer));
 		}
 
 		return this.currentRun;
@@ -38,7 +38,7 @@ export class MochaTestRunner implements ITestRunner {
 		throw new Error('Not implemented yet.');
 	}
 
-	private createObservable(observer: Observer<TestRun>): void {
+	private createObservable(observer: Observer<LitmusRunnerEvent>): void {
 		const mocha = new Mocha();
 
 		const jsFiles = this._directory.getFilesRecursive()
@@ -49,14 +49,16 @@ export class MochaTestRunner implements ITestRunner {
 			mocha.addFile(f.fullPath);
 		});
 
-		this.mochaRunner = mocha.run((failures: number) => observer.complete());
+		this.mochaRunner = mocha.run((_failures: number) => {
+			observer.next(new TestRunFinished());
+			observer.complete();
+		});
 		const totalTests = this.mochaRunner.total;
 
 		// TODO use linked list
 		// Right now we're sharing the array between every `TestRun`, but really we want each to be independant
 		// Copying the array every time will take up lots of space (and lots of garbage collection)
 		const allResults = new Array<TestCaseOutcome>();
-		let numTestsRun: number = 0;
 
 		this.mochaRunner.on('fail', (t: ITest | IHook) => {
 			if (t.type === 'hook' && t.originalTitle === '"before each" hook') {
@@ -66,6 +68,20 @@ export class MochaTestRunner implements ITestRunner {
 			}
 		});
 
+		let isFirst = true;
+		this.mochaRunner.on('test', (t: ITest) => {
+			if (isFirst) {
+				isFirst = false;
+
+				// Inform Litmus UI of the parameters it will be dealing with before delivering the test results
+				const event = new TestRunStarted(["Suite", "File"], totalTests);
+				observer.next(event);
+			}
+
+			const testcase = buildTestCase(t);
+			observer.next(new IndividualTestStarted(testcase));
+		});
+
 		this.mochaRunner.on('test end', (t: ITest) => {
 			pushResult(t);
 		});
@@ -73,19 +89,17 @@ export class MochaTestRunner implements ITestRunner {
 		const that = this;
 		function pushResult(t: ITest) {
 			const testDuration = t.duration || 0;
+			const testStatus = that.getTestStatus(t);
 
 			const testCase = buildTestCase(t);
 
-			const testStatus = that.getTestStatus(t);
 			const failureInfo = that.getFailureInfo(t);
 
-			allResults.push(new TestCaseOutcome(testCase, testStatus, testDuration, failureInfo));
+			const thisOutcome = new TestCaseOutcome(testCase, testStatus, testDuration, failureInfo);
+			allResults.push(thisOutcome);
 
-			numTestsRun++;
-			const pct = that.capProgress((numTestsRun / totalTests) * 100); // TODO totalTests === 0 > DIV/0 error
-
-			const testRun = new TestRun(allResults, pct);
-			observer.next(testRun);
+			const event = new IndividualTestFinished(thisOutcome);
+			observer.next(event);
 		}
 
 		function buildTestCase(t: ITest): TestCase {
@@ -121,6 +135,7 @@ export class MochaTestRunner implements ITestRunner {
 	public abort(): void {
 		if (this.mochaRunner) {
 			this.mochaRunner.abort();
+			this.mochaRunner = undefined;
 		}
 	}
 
@@ -179,12 +194,5 @@ export class MochaTestRunner implements ITestRunner {
 		}
 
 		return [...this.constructHierarchy2(suite.parent), suite.title];
-	}
-
-	private capProgress(progress: number): number {
-		progress = Math.max(progress, 0);
-		progress = Math.min(progress, 100);
-
-		return progress;
 	}
 }
