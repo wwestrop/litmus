@@ -17,7 +17,7 @@ const backgroundWorker = initBackroundWorker();
 // TODO now that we're not pushing the whole state with every run - there isn't a way to reset this 😒 - e.g. when opening new project
 let lastRunResults: TestRun = TestRun.Empty;
 
-let selectedDir: Directory | null;
+let currentlySelectedDir: Directory | null;
 
 let applicationStatus: ApplicationStatus = "welcome";
 
@@ -120,7 +120,7 @@ function setAvailableGroupingKeys(keys: string[]): void {
 }
 
 ipcRenderer.on("request-runTests", () => {
-	runTests(selectedDir);
+	runTests(currentlySelectedDir);
 });
 
 ipcRenderer.on("test-run-finished", (_e: Electron.Event) => {
@@ -568,21 +568,35 @@ function openDirectory() {
 			properties: [ "openDirectory" ]
 		},
 		(s: string[]) => {
-			if (s) {
-
-				// Wipe out the existing tree state
-				lastRunResults = TestRun.Empty;
-				applicationStatus = "testing";
-				pushTestState();
-
-				selectedDir = new Directory(s[0]);
-				runTests(selectedDir);
+			if (s.length === 1) {
+				runTestsFromScratch(new Directory(s[0]));
 			}
 		}
 	);
 }
 
-function onOpenClick(this: GlobalEventHandlers, ev: MouseEvent): any {
+ipcRenderer.on("openSpecificDirectory", (_e: Electron.Event, selectedDir: Directory) => {
+	runTestsFromScratch(selectedDir);
+});
+
+function runTestsFromScratch(selectedDir: Directory) {
+
+	currentlySelectedDir = selectedDir;
+
+	// Wipe out the existing tree state
+	lastRunResults = TestRun.Empty;
+	applicationStatus = "testing";
+	pushTestState();
+
+	currentWindow.setProgressBar(2);    // Indeterminate
+	                                    // TODO should clear badge too
+
+	ipcRenderer.send("directoryOpened", selectedDir);
+
+	runTests(selectedDir);
+}
+
+function onOpenClick(this: GlobalEventHandlers, ev: MouseEvent): void {
 	openDirectory();
 }
 
@@ -594,7 +608,7 @@ function onResetFilterClick(this: GlobalEventHandlers, ev: MouseEvent): any {
 }
 
 function onRunAllClick(this: GlobalEventHandlers, ev: MouseEvent): any {
-	runTests(selectedDir);
+	runTests(currentlySelectedDir);
 }
 
 function onStopClick(this: GlobalEventHandlers, ev: MouseEvent): any {

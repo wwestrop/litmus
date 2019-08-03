@@ -57,7 +57,7 @@ export class EmptyScreen extends React.Component<EmptyScreenViewModel> {
 		return <h2>{prefix}{hyperlink}{suffix}</h2>;
 	}
 
-	private callToActionTextClicked(e: React.SyntheticEvent<MouseEvent>) {
+	private callToActionTextClicked(e: React.MouseEvent<HTMLAnchorElement>) {
 		if (this.props.callToActionClicked)
 		{
 			this.props.callToActionClicked();

@@ -1,9 +1,11 @@
-import { app, BrowserWindow, Menu, MenuItem, dialog, nativeImage, ipcMain, shell } from "electron";
+import { app, BrowserWindow, Menu, MenuItem, dialog, nativeImage, ipcMain, shell, ipcRenderer } from "electron";
 import * as Path from 'path';
 import { TestStatus } from "./ts/types/TestStatus";
 import * as KbShortcuts from 'electron-localshortcut';
 import { DEV_MODE } from './ts/Consts';
 import { LitmusRunnerEvent } from "./ts/types/LitmusRunnerEvent";
+import { Directory } from '../lib/LibFs/Fs';
+import { MruManager } from "./ts/MruManager";
 
 let mainWindow: BrowserWindow;
 
@@ -75,6 +77,9 @@ app.on("ready", initMainWindow);
 function initMainWindow() {
 
 	initMainMenu();
+
+	// If this isn't done before instantiating a BrowserWindow, it never works thereafter
+	new MruManager().getMru(); // it auto-populates now
 
 	mainWindow = new BrowserWindow({
 		width: 1100,
@@ -162,10 +167,44 @@ function initMainMenu() {
 
 	const fileMenuContents = new Menu();
 	fileMenuContents.append(menus.fileOpenFolder);
+	fileMenuContents.append(new MenuItem({
+		type: "separator",
+	}));
+	appendMru();
 	menuBar.append(new MenuItem({
 		label: "&File",
 		submenu: fileMenuContents,
 	}));
+
+	function appendMru(): void {
+		const mruList = new MruManager().getMru();
+		if (mruList.length === 0) {
+			fileMenuContents.append(new MenuItem({
+				enabled: false,
+				label: "(Recently opened projects)",
+			}));
+		}
+		else {
+			const mruMenuItems = buildMruMenu(mruList);
+			for (let i = 0; i < mruMenuItems.length; i++) {
+				fileMenuContents.append(mruMenuItems[i]);
+			}
+		}
+	}
+
+	function buildMruMenu(mruList: Directory[]): MenuItem[] {
+		const mruMenuItems: MenuItem[] = [];
+		for (let i = 1; i <= mruList.length; i++) {
+			const mru = mruList[i-1];
+			mruMenuItems.push(new MenuItem({
+				label: `&${i} ${mru.name}`,
+				click: () => { mainWindow.webContents.send("openSpecificDirectory", new Directory(mru.fullPath)); },
+				// TODO MRU list must be inactive while tests are running AARRGGGHHHH, UI is so horrible 😱😱😱😱😱😱😱😱
+			}));
+		}
+
+		return mruMenuItems;
+	}
 
 	menuBar.append(new MenuItem({
 		label: "&Edit",
@@ -299,6 +338,18 @@ function toggleDevTools() {
 function openDirectory() {
 	mainWindow.webContents.send("request-openDirectory");
 }
+
+ipcMain.on("directoryOpened", (_e: Electron.Event, selectedDir: Directory) => {
+	// Persist MRU
+	new MruManager().addMruItem(selectedDir);
+
+	// Jumplist
+	//new JumplistBuilder().addMruItem(selectedDir);
+
+	// Menu
+	// const mru = new MruBuilder().getMru();
+	//new JumplistBuilder().addMruItem(selectedDir);
+});
 
 function runTests() {
 	mainWindow.webContents.send("request-runTests");

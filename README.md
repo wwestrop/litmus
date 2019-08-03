@@ -49,6 +49,14 @@ The app has three "threads" of execution runnng at all times, which have the fol
 
 
 ## Changelog
+### 0.1.3 Unreleased
+* Factored `TestRunner` to report progress more granularly
+* UI polish (per-test throbbers against slow-running tests, stale test indication)
+* Visible warning when all tests are filtered out of view by the selected filter
+* Higher resolution graphics for high-density screens
+* Recently tested projects list (also displayed on Taskbar jumplist)
+* Build improvement (compilation most likely to fail, so moved first; stopped linting, it's not providing value)
+
 ### 0.1.2
 * Tests which fail during the `beforeEach` hook show up correctly
 * Cancellable test runs (keyboard shortcut `Esc`)
@@ -56,8 +64,10 @@ The app has three "threads" of execution runnng at all times, which have the fol
 * Right-click context menu added to test results tree
 * Controls showing as disabled when appropriate
 * Misc UI polish (tooltips, animation, extra keybindings, more responsive status display)
+
 ### 0.1.1
 * Linux packaging
+
 ### 0.1.0
 * Initial MVP. Windows only.
 * Runs Mocha tests and displays the results.
