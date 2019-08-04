@@ -527,7 +527,7 @@ ipcRenderer.on("request-openDirectory", () => {
 });
 
 function initBackroundWorker(): BrowserWindow {
-	const result = new remote.BrowserWindow({show: DEV_MODE, closable: false});
+	const result = new remote.BrowserWindow({show: DEV_MODE, closable: false, webPreferences: { nodeIntegration: true }});
 	result.loadURL(`file://${__dirname}/backgroundTestRunnerWorker.html?parentWindowId=${currentWindow.id}`);
 	if (DEV_MODE) {
 		result.webContents.openDevTools();

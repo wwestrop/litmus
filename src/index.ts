@@ -84,10 +84,11 @@ function initMainWindow() {
 		title: "Litmus",
 		backgroundColor: "#6F719D", // TODO factor colour from SASS/CSS somehow?
 		show: true,
-		// webPreferences: {
-		// 	devTools: DEV_MODE,
-		// 	scrollBounce: true,
-		// }
+		webPreferences: {
+			//devTools: DEV_MODE,
+			//scrollBounce: true,
+			nodeIntegration: true,
+		},
 
 		icon: nativeImage.createFromPath(Path.resolve(__dirname, "res", "icons", "48x48.png")),
 		//titleBarStyle: "", // depend if macOS?
