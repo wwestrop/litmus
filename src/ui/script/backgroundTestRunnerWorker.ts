@@ -120,3 +120,5 @@ function runTests(directory: string, ctxt?: LitmusContext) {
 function trampoline(messageName: string, ...args: any[]) {
 	parentWindow.webContents.send(messageName, ...args);
 }
+
+ipcRenderer.send("worker-bootstrapped");

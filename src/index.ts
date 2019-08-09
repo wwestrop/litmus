@@ -7,6 +7,27 @@ import { LitmusRunnerEvent } from "./ts/types/LitmusRunnerEvent";
 import { Directory } from '../lib/LibFs/Fs';
 import { MruManager } from "./ts/MruManager";
 
+// TODO factor out the ipcmain thing as well so that's injected?
+namespace BootTracker { // TODO module instead of namespace?
+	let processesBootstrapped = 0;
+	export let onBooted = () => {};
+
+	ipcMain.on("worker-bootstrapped", (_e: Electron.Event) => {
+		processesBootstrapped++;
+		if (processesBootstrapped === 2) {
+			onBooted();
+		}
+	});
+
+	ipcMain.on("renderer-bootstrapped", (_e: Electron.Event) => {
+		processesBootstrapped++;
+		if (processesBootstrapped === 2) {
+			onBooted();
+		}
+	});
+}
+BootTracker.onBooted = applicationBooted;
+
 let mainWindow: BrowserWindow;
 
 // TODO these menuItem references are for the *SINGLETON* UI window (so if we ever want to allow multiple windows......)
@@ -415,6 +436,27 @@ ipcMain.on("set-menu-filter-checkbox", (_e: Electron.Event, selectedFilter: Test
 		menuItem.checked = true;
 	}
 });
+
+function applicationBooted() {
+
+	// If requested to open a directory as part of bootup, pass that information to the renderer
+	if (!app.isPackaged) {
+		const requestedFolderArgumentIndex = process.argv.findIndex(a => a === "bin/src");
+		if (requestedFolderArgumentIndex !== -1) {
+			const requestedFolder = process.argv[requestedFolderArgumentIndex + 1];
+			if (requestedFolder) {
+				mainWindow.webContents.send("openSpecificDirectory", new Directory(requestedFolder));
+			}
+		}
+	}
+	else {
+		const requestedFolder = process.argv[1]; // TODO is there a better way than sniffing out positional parameters
+		if (requestedFolder) {
+			mainWindow.webContents.send("openSpecificDirectory", new Directory(requestedFolder));
+		}
+	}
+}
+
 
 // function flashTaskbarIcon() {
 //  app.dock.bounce();

@@ -672,3 +672,5 @@ initialiseToolbar();
 
 // Show initial onboarding welcome screen
 reactTree.render("welcome", <any>onOpenClick, <any>onResetFilterClick!);
+
+ipcRenderer.send("renderer-bootstrapped");
