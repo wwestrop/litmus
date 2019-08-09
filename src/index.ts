@@ -1,11 +1,12 @@
-import { app, BrowserWindow, Menu, MenuItem, dialog, nativeImage, ipcMain, shell, ipcRenderer } from "electron";
+import { app, BrowserWindow, Menu, nativeImage, ipcMain } from "electron";
 import * as Path from 'path';
 import { TestStatus } from "./ts/types/TestStatus";
 import * as KbShortcuts from 'electron-localshortcut';
 import { DEV_MODE } from './ts/Consts';
 import { LitmusRunnerEvent } from "./ts/types/LitmusRunnerEvent";
 import { Directory } from '../lib/LibFs/Fs';
-import { MruManager } from "./ts/MruManager";
+import { MruManager } from './ts/MruManager';
+import { MenuBuilder } from "./MenuBuilder";
 
 // TODO factor out the ipcmain thing as well so that's injected?
 namespace BootTracker { // TODO module instead of namespace?
@@ -28,70 +29,13 @@ namespace BootTracker { // TODO module instead of namespace?
 }
 BootTracker.onBooted = applicationBooted;
 
-let mainWindow: BrowserWindow;
+const menuManager = new MenuBuilder(new MruManager());
 
-// TODO these menuItem references are for the *SINGLETON* UI window (so if we ever want to allow multiple windows......)
-const menus = {
-	fileOpenFolder: new MenuItem({
-		label: "Open folder…",
-		accelerator: "CmdOrCtrl+O",
-		click: () => {
-			openDirectory();
-		}
-	}),
-	//////////////////////////////////////////////////////////////
-	viewAll: new MenuItem({
-		label: "View &all tests",
-		accelerator: "CmdOrCtrl+1",
-		type: "radio",
-		checked: true,
-		click: () => onFilterMenuChanged(null),
-	}),
-	viewPassed: new MenuItem({
-		label: "View &passed tests",
-		accelerator: "CmdOrCtrl+2",
-		type: "radio",
-		click: () => onFilterMenuChanged("Passed"),
-	}),
-	viewFailed: new MenuItem({
-		label: "View &failed tests",
-		accelerator: "CmdOrCtrl+3",
-		type: "radio",
-		click: () => onFilterMenuChanged("Failed"),
-	}),
-	viewSkipped: new MenuItem({
-		label: "View &skipped tests",
-		accelerator: "CmdOrCtrl+4",
-		type: "radio",
-		click: () => onFilterMenuChanged("Skipped"),
-	}),
-	//////////////////////////////////////////////////////////////
-	testsRunAll: new MenuItem({
-		label: "Run all tests",
-		accelerator: "F5",
-		enabled: false,
-		click: () => {
-			runTests();
-		}
-	}),
-	testsRunVisible: new MenuItem({
-		label: "Run visible tests only",
-		accelerator: "F6",
-		enabled: false,
-		click: () => {
-			dialog.showErrorBox("Not implemented", "Not implemented");
-		}
-	}),
-	testsStop: new MenuItem({
-		label: "Stop running tests",
-		enabled: false,
-		accelerator: "Esc",
-		click: () => {
-			stopTests();
-		}
-	}),
-};
-
+// TODO export, urgh, everything has to have reference to everything else. Even the logic of building the menu. Should we poke in these as event handlers, rather than spaghetti-linking all the functions in all the different files?
+// TODO Or should we encapsulate, e.g. `mainWindow` in it's own (static) module (=> single-window-app) and expose access to the IPC via the interface exposed there?
+// TODO since a lot of what this index.ts file is doing is sending messages back and forth
+// TODO can multiple places receive an IPC event (even the same one?). Then the menu class can just listen when files are opened and automatically change itself
+export let mainWindow: BrowserWindow;
 
 app.on("ready", initMainWindow);
 
@@ -153,210 +97,34 @@ function initMainWindow() {
 
 /** Also sets-up application keyboard shortcuts */
 function initMainMenu() {
-	const menuBar = new Menu();
+ 	const menuBar = menuManager.initMainMenu();
 
-	menuBar.append(new MenuItem({
-		label: "&Litmus",
-		submenu: [
-			{
-				label: "About Litmus",
-				role: "about"
-			},
-			{
-				type: "separator",
-			},
-			{
-				role: "services",
-			},
-			{
-				type: "separator",
-			},
-			{
-				role: "hide",
-			},
-			{
-				role: "hideothers",
-			},
-			{
-				type: "separator",
-			},
-			{
-				role: "quit"
-			},
-		]
-	}));
-
-	const fileMenuContents = new Menu();
-	fileMenuContents.append(menus.fileOpenFolder);
-	fileMenuContents.append(new MenuItem({
-		type: "separator",
-	}));
-	appendMru();
-	menuBar.append(new MenuItem({
-		label: "&File",
-		submenu: fileMenuContents,
-	}));
-
-	function appendMru(): void {
-		const mruList = new MruManager().getMru();
-		if (mruList.length === 0) {
-			fileMenuContents.append(new MenuItem({
-				enabled: false,
-				label: "(Recently opened projects)",
-			}));
-		}
-		else {
-			const mruMenuItems = buildMruMenu(mruList);
-			for (let i = 0; i < mruMenuItems.length; i++) {
-				fileMenuContents.append(mruMenuItems[i]);
-			}
-		}
-	}
-
-	function buildMruMenu(mruList: Directory[]): MenuItem[] {
-		const mruMenuItems: MenuItem[] = [];
-		for (let i = 1; i <= mruList.length; i++) {
-			const mru = mruList[i-1];
-			mruMenuItems.push(new MenuItem({
-				label: `&${i} ${mru.name}`,
-				click: () => { mainWindow.webContents.send("openSpecificDirectory", new Directory(mru.fullPath)); },
-				// TODO MRU list must be inactive while tests are running AARRGGGHHHH, UI is so horrible 😱😱😱😱😱😱😱😱
-			}));
-		}
-
-		return mruMenuItems;
-	}
-
-	menuBar.append(new MenuItem({
-		label: "&Edit",
-		role: "editMenu",
-	}));
-
-	const viewMenuContents = new Menu();
-	viewMenuContents.append(menus.viewAll);
-	viewMenuContents.append(menus.viewPassed);
-	viewMenuContents.append(menus.viewFailed);
-	viewMenuContents.append(menus.viewSkipped);
-	viewMenuContents.append(new MenuItem({
-		type: "separator",
-	}));
-	viewMenuContents.append(new MenuItem({
-		label: "Test &results",
-		type: "radio",
-		checked: true,
-	}));
-	viewMenuContents.append(new MenuItem({
-		label: "Test &coverage",
-		type: "radio",
-		enabled: false,
-	}));
-	viewMenuContents.append(new MenuItem({
-		type: "separator",
-	}));
-	viewMenuContents.append(new MenuItem({
-		label: "Zoom In",
-		accelerator: "CmdOrCtrl+Shift+Plus",						// TODO bug in Electron makes this appear as Ctrl+Shift+=
-		click: () => {
-			mainWindow.webContents.getZoomFactor(f => {
-				mainWindow.webContents.setZoomFactor(f + 0.1);
-			});
-		},
-	}));
-	viewMenuContents.append(new MenuItem({
-		label: "Zoom Out",
-		accelerator: "CmdOrCtrl+Shift+-",
-		click: () => {
-			mainWindow.webContents.getZoomFactor(f => {
-				let newZoomFactor = f - 0.1;
-				newZoomFactor = newZoomFactor <= 0 ? f : newZoomFactor;
-				mainWindow.webContents.setZoomFactor(newZoomFactor);
-			});
-		},
-	}));
-	viewMenuContents.append(new MenuItem({
-		type: "separator",
-	}));
-	if (DEV_MODE) {
-		viewMenuContents.append(new MenuItem({
-			label: "Developer tools",
-			accelerator: "F12",
-			click: () => {
-				toggleDevTools();
-			}
-		}));
-	}
-	viewMenuContents.append(new MenuItem({
-		type: "separator",
-	}));
-	viewMenuContents.append(new MenuItem({
-		label: "Full screen",
-		accelerator: "F11",
-		type: "checkbox",
-		click: () => {
-			mainWindow.setFullScreen(!mainWindow.isFullScreen());
-		},
-	}));
-
-	menuBar.append(new MenuItem({
-		label: "&View",
-		submenu: viewMenuContents,
-	}));
-
-	const testMenuContents = new Menu();
-	testMenuContents.append(menus.testsRunAll);
-	testMenuContents.append(menus.testsRunVisible);
-	testMenuContents.append(new MenuItem({
-		type: "separator",
-	}));
-	testMenuContents.append(menus.testsStop);
-	menuBar.append(new MenuItem({
-		label: "&Test",
-		submenu: testMenuContents,
-	}));
-
-
-	menuBar.append(new MenuItem({
-		label: "&Window",
-		role: "windowMenu"
-	}));
-
-	menuBar.append(new MenuItem({
-		label: "&Help",
-		submenu: [
-			{
-				label: "Online documentation",
-				accelerator: "F1",
-				click: () => shell.openExternal("https://litmus-js.app")
-			}
-		]
-	}));
-
-	// TODO On Mac set the menu - macOS requires it anyway.
-	// TODO Win/Lin, Litmus is simple enough there's no need for a menu. Instead set null -> But set the KB shortcuts instead
-	Menu.setApplicationMenu(menuBar);
+ 	// TODO On Mac set the menu - macOS requires it anyway.
+ 	// TODO Win/Lin, Litmus is simple enough there's no need for a menu. Instead set null -> But set the KB shortcuts instead
+ 	Menu.setApplicationMenu(menuBar);
 }
 
 ipcMain.on("open.disabled", (e: Electron.Event, disabled: boolean) => {
-	menus.fileOpenFolder.enabled = !disabled;
+	menuManager.setApplicationIsBusy(disabled);
 });
 
 ipcMain.on("runAll.disabled", (e: Electron.Event, disabled: boolean) => {
-	menus.testsRunAll.enabled = !disabled;
+	menuManager.setApplicationIsBusy(disabled);
 });
 
 ipcMain.on("runVisible.disabled", (e: Electron.Event, disabled: boolean) => {
-	menus.testsRunVisible.enabled = !disabled;
+	menuManager.setApplicationIsBusy(disabled);
 });
 
 ipcMain.on("stop.disabled", (e: Electron.Event, disabled: boolean) => {
-	menus.testsStop.enabled = !disabled;
+	menuManager.setApplicationIsBusy(disabled);
 });
 
-function toggleDevTools() {
+export function toggleDevTools() {
 	mainWindow.webContents.toggleDevTools();
 }
 
-function openDirectory() {
+export function openDirectory() {
 	mainWindow.webContents.send("request-openDirectory");
 }
 
@@ -372,15 +140,15 @@ ipcMain.on("directoryOpened", (_e: Electron.Event, selectedDir: Directory) => {
 	//new JumplistBuilder().addMruItem(selectedDir);
 });
 
-function runTests() {
+export function runTests() {
 	mainWindow.webContents.send("request-runTests");
 }
 
-function stopTests() {
+export function stopTests() {
 	mainWindow.webContents.send("request-stop");
 }
 
-function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
+export function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
 	mainWindow.webContents.send("menu-filter-changed", selectedFilter);
 }
 
@@ -415,26 +183,7 @@ ipcMain.on("trampoline", (_e: Electron.Event, messageName: string, ...args: any[
 });
 
 ipcMain.on("set-menu-filter-checkbox", (_e: Electron.Event, selectedFilter: TestStatus | null) => {
-
-	let menuItem: MenuItem;
-	switch (selectedFilter) {
-		case "Passed":
-			menuItem = menus.viewPassed;
-			break;
-		case "Failed":
-			menuItem = menus.viewFailed;
-			break;
-		case "Skipped":
-			menuItem = menus.viewSkipped;
-			break;
-		default:
-			menuItem = menus.viewAll;
-			break;
-	}
-
-	if (menuItem.checked === false) {
-		menuItem.checked = true;
-	}
+	menuManager.setSelectedTestFilter(selectedFilter);
 });
 
 function applicationBooted() {

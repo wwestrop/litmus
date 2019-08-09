@@ -123,7 +123,7 @@ ipcRenderer.on("request-runTests", () => {
 	runTests(currentlySelectedDir);
 });
 
-ipcRenderer.on("test-run-finished", (_e: Electron.Event) => {
+ipcRenderer.on("test-run-finished", (_e: Electron.Event) => { // TODO why do I have both this and `TestRunFinished`?
 	LitmusDom.isBusy = false;
 
 	// TODO This is not nice
