@@ -3,8 +3,8 @@ import { TestStatus } from "./ts/types/TestStatus";
 import { DEV_MODE } from './ts/Consts';
 import { Directory } from '../lib/LibFs/Fs';
 import { MruManager } from './ts/MruManager';
-import { mainWindow } from "./index";
 import { ApplicationStatus } from './ui/script/applicationStatus';
+import { LitmusMainWindow } from "./LitmusMainWindow";
 
 
 export class MenuBuilder {
@@ -166,14 +166,14 @@ export class MenuBuilder {
 			label: "Zoom In",
 			accelerator: "CmdOrCtrl+Shift+Plus",
 			click: () => {
-				mainWindow.webContents.setZoomFactor(mainWindow.webContents.getZoomFactor() + 0.1);
+				LitmusMainWindow.zoomIn();
 			},
 		}));
 		viewMenuContents.append(new MenuItem({
 			label: "Zoom Out",
 			accelerator: "CmdOrCtrl+Shift+-",
 			click: () => {
-				mainWindow.webContents.setZoomFactor(mainWindow.webContents.getZoomFactor() - 0.1);
+				LitmusMainWindow.zoomOut();
 			},
 		}));
 		viewMenuContents.append(new MenuItem({
@@ -198,7 +198,7 @@ export class MenuBuilder {
 			accelerator: "F11",
 			type: "checkbox",
 			click: () => {
-				mainWindow.setFullScreen(!mainWindow.isFullScreen());
+				LitmusMainWindow.toggleFullScreen();
 			},
 		}));
 		menuBar.append(new MenuItem({
@@ -265,7 +265,7 @@ export class MenuBuilder {
 				mruMenuItems.push(new MenuItem({
 					id: `mru-${i}`,
 					label: `&${i} ${mru.name}`,
-					click: () => { mainWindow.webContents.send("openSpecificDirectory", new Directory(mru.fullPath)); },
+					click: () => LitmusMainWindow.openSpecificDirectory(mru.fullPath),
 				}));
 			}
 			return mruMenuItems;
@@ -303,31 +303,5 @@ export class MenuBuilder {
 		if (menuItem.checked === false) {
 			menuItem.checked = true;
 		}
-	}
-}
-
-// TODO extract all this to the proposed class that wraps and managed the `mainWindow` BrowserWindow and all interaction with it
-// to something that sits atop an Electron `BrowserWindow` and exposes the API via which the this._mainWindow can be controlled.
-// Under the hood, defers everything to IPC calls (and maybe surface some events coming back via IPC),
-// but avoids magic strings littered all over the place
-namespace LitmusMainWindow {
-	export function openDirectory() {
-		mainWindow.webContents.send("request-openDirectory");
-	}
-
-	export function runTests() {
-		mainWindow.webContents.send("request-runTests");
-	}
-
-	export function stopTests() {
-		mainWindow.webContents.send("request-stop");
-	}
-
-	export function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
-		mainWindow.webContents.send("menu-filter-changed", selectedFilter);
-	}
-
-	export function toggleDevTools(): void {
-		mainWindow.webContents.toggleDevTools();
 	}
 }
