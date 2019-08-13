@@ -3,8 +3,8 @@ import { TestStatus } from "./ts/types/TestStatus";
 import { DEV_MODE } from './ts/Consts';
 import { Directory } from '../lib/LibFs/Fs';
 import { MruManager } from './ts/MruManager';
+import { mainWindow } from "./index";
 import { ApplicationStatus } from './ui/script/applicationStatus';
-import { openDirectory, onFilterMenuChanged, runTests, stopTests, mainWindow, toggleDevTools } from "./index";
 
 
 export class MenuBuilder {
@@ -14,72 +14,80 @@ export class MenuBuilder {
 
 	public constructor(private readonly mru: MruManager) { }
 
-	// TODO these menuItem references are for the *SINGLETON* UI window (so if we ever want to allow multiple windows......)
-	private readonly menus = {
-		fileOpenFolder: new MenuItem({
-			label: "Open folder…",
-			accelerator: "CmdOrCtrl+O",
-			click: () => {
-				openDirectory();
-			}
-		}),
-		//////////////////////////////////////////////////////////////
-		viewAll: new MenuItem({
-			label: "View &all tests",
-			accelerator: "CmdOrCtrl+1",
-			type: "radio",
-			checked: true,
-			click: () => onFilterMenuChanged(null),
-		}),
-		viewPassed: new MenuItem({
-			label: "View &passed tests",
-			accelerator: "CmdOrCtrl+2",
-			type: "radio",
-			click: () => onFilterMenuChanged("Passed"),
-		}),
-		viewFailed: new MenuItem({
-			label: "View &failed tests",
-			accelerator: "CmdOrCtrl+3",
-			type: "radio",
-			click: () => onFilterMenuChanged("Failed"),
-		}),
-		viewSkipped: new MenuItem({
-			label: "View &skipped tests",
-			accelerator: "CmdOrCtrl+4",
-			type: "radio",
-			click: () => onFilterMenuChanged("Skipped"),
-		}),
-		//////////////////////////////////////////////////////////////
-		testsRunAll: new MenuItem({
-			label: "Run all tests",
-			accelerator: "F5",
-			enabled: false,
-			click: () => {
-				runTests();
-			}
-		}),
-		testsRunVisible: new MenuItem({
-			label: "Run visible tests only",
-			accelerator: "F6",
-			enabled: false,
-			click: () => {
-				dialog.showErrorBox("Not implemented", "Not implemented");
-			}
-		}),
-		testsStop: new MenuItem({
-			label: "Stop running tests",
-			enabled: false,
-			accelerator: "Esc",
-			click: () => {
-				stopTests();
-			}
-		}),
-	};
+	private menus: any;
 
-	private fileMenuContents: Menu;
+	private createMenuTemplate() {
+		this.menus = {
+			fileOpenFolder: new MenuItem({
+				label: "Open folder…",
+				accelerator: "CmdOrCtrl+O",
+				enabled: this.applicationStatus === "welcome" || this.applicationStatus === "idle",
+				click: () => {
+					LitmusMainWindow.openDirectory();
+				}
+			}),
+			//////////////////////////////////////////////////////////////
+			viewAll: new MenuItem({
+				label: "View &all tests",
+				accelerator: "CmdOrCtrl+1",
+				type: "radio",
+				checked: this.selectedFilter === null,
+				click: () => LitmusMainWindow.onFilterMenuChanged(null),
+			}),
+			viewPassed: new MenuItem({
+				label: "View &passed tests",
+				accelerator: "CmdOrCtrl+2",
+				type: "radio",
+				checked: this.selectedFilter === "Passed",
+				click: () => LitmusMainWindow.onFilterMenuChanged("Passed"),
+			}),
+			viewFailed: new MenuItem({
+				label: "View &failed tests",
+				accelerator: "CmdOrCtrl+3",
+				type: "radio",
+				checked: this.selectedFilter === "Failed",
+				click: () => LitmusMainWindow.onFilterMenuChanged("Failed"),
+			}),
+			viewSkipped: new MenuItem({
+				label: "View &skipped tests",
+				accelerator: "CmdOrCtrl+4",
+				type: "radio",
+				checked: this.selectedFilter === "Skipped",
+				click: () => LitmusMainWindow.onFilterMenuChanged("Skipped"),
+			}),
+			//////////////////////////////////////////////////////////////
+			testsRunAll: new MenuItem({
+				label: "Run all tests",
+				accelerator: "F5",
+				enabled: this.applicationStatus === "idle",
+				click: () => {
+					LitmusMainWindow.runTests();
+				}
+			}),
+			testsRunVisible: new MenuItem({
+				label: "Run visible tests only",
+				accelerator: "F6",
+				enabled: this.applicationStatus === "idle",
+				click: () => {
+					dialog.showErrorBox("Not implemented", "Not implemented");
+				}
+			}),
+			testsStop: new MenuItem({
+				label: "Stop running tests",
+				accelerator: "Esc",
+				enabled: this.applicationStatus === "testing",
+				click: () => {
+					LitmusMainWindow.stopTests();
+				}
+			}),
+		};
+	}
 
 	/** Also sets-up application keyboard shortcuts */
 	public initMainMenu(): Menu {
+
+		this.createMenuTemplate();
+
 		const menuBar = new Menu();
 		menuBar.append(new MenuItem({
 			label: "&Litmus",
@@ -112,20 +120,20 @@ export class MenuBuilder {
 			]
 		}));
 
-		this.fileMenuContents = new Menu();
-		this.fileMenuContents.append(this.menus.fileOpenFolder);
-		this.fileMenuContents.append(new MenuItem({
+		const fileMenuContents = new Menu();
+		fileMenuContents.append(this.menus.fileOpenFolder);
+		fileMenuContents.append(new MenuItem({
 			type: "separator",
 		}));
 
 		const mruMenuItems = this.buildMruMenuItems();
 		for (const m of mruMenuItems) {
-			this.fileMenuContents.append(m);
+			fileMenuContents.append(m);
 		}
 
 		menuBar.append(new MenuItem({
 			label: "&File",
-			submenu: this.fileMenuContents,
+			submenu: fileMenuContents,
 		}));
 
 		menuBar.append(new MenuItem({
@@ -177,7 +185,7 @@ export class MenuBuilder {
 				label: "Developer tools",
 				accelerator: "F12",
 				click: () => {
-					toggleDevTools();
+					LitmusMainWindow.toggleDevTools();
 				}
 			}));
 		}
@@ -264,15 +272,18 @@ export class MenuBuilder {
 		}
 	}
 
-	public setApplicationIsBusy(isBusy: boolean) {
-		this.menus.fileOpenFolder.enabled = !isBusy;
-		this.menus.testsRunAll.enabled = !isBusy;
-		this.menus.testsRunVisible.enabled = !isBusy;
-		this.menus.testsStop.enabled = !isBusy;
+	public setApplicationStatus(applicationStatus: ApplicationStatus) {
+		this.applicationStatus = applicationStatus;
+
+		this.menus.fileOpenFolder.enabled = this.applicationStatus === "welcome" || this.applicationStatus === "idle";
+		this.menus.testsRunAll.enabled = this.applicationStatus === "idle";
+		this.menus.testsRunVisible.enabled = this.applicationStatus === "idle";
+		this.menus.testsStop.enabled = this.applicationStatus === "testing";
 	}
 
 	public setSelectedTestFilter(selectedFilter: TestStatus | null) {
 		this.selectedFilter = selectedFilter;
+
 		let menuItem: MenuItem;
 		switch (selectedFilter) {
 			case "Passed":
@@ -288,8 +299,35 @@ export class MenuBuilder {
 				menuItem = this.menus.viewAll;
 				break;
 		}
+
 		if (menuItem.checked === false) {
 			menuItem.checked = true;
 		}
+	}
+}
+
+// TODO extract all this to the proposed class that wraps and managed the `mainWindow` BrowserWindow and all interaction with it
+// to something that sits atop an Electron `BrowserWindow` and exposes the API via which the this._mainWindow can be controlled.
+// Under the hood, defers everything to IPC calls (and maybe surface some events coming back via IPC),
+// but avoids magic strings littered all over the place
+namespace LitmusMainWindow {
+	export function openDirectory() {
+		mainWindow.webContents.send("request-openDirectory");
+	}
+
+	export function runTests() {
+		mainWindow.webContents.send("request-runTests");
+	}
+
+	export function stopTests() {
+		mainWindow.webContents.send("request-stop");
+	}
+
+	export function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
+		mainWindow.webContents.send("menu-filter-changed", selectedFilter);
+	}
+
+	export function toggleDevTools(): void {
+		mainWindow.webContents.toggleDevTools();
 	}
 }

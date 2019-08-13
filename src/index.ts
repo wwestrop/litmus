@@ -7,6 +7,7 @@ import { LitmusRunnerEvent } from "./ts/types/LitmusRunnerEvent";
 import { Directory } from '../lib/LibFs/Fs';
 import { MruManager } from './ts/MruManager';
 import { MenuBuilder } from "./MenuBuilder";
+import { ApplicationStatus } from './ui/script/applicationStatus';
 
 // TODO factor out the ipcmain thing as well so that's injected?
 namespace BootTracker { // TODO module instead of namespace?
@@ -97,36 +98,16 @@ function initMainWindow() {
 
 /** Also sets-up application keyboard shortcuts */
 function initMainMenu() {
- 	const menuBar = menuManager.initMainMenu();
+	const menuBar = menuManager.initMainMenu();
 
- 	// TODO On Mac set the menu - macOS requires it anyway.
- 	// TODO Win/Lin, Litmus is simple enough there's no need for a menu. Instead set null -> But set the KB shortcuts instead
- 	Menu.setApplicationMenu(menuBar);
+	// TODO On Mac set the menu - macOS requires it anyway.
+	// TODO Win/Lin, Litmus is simple enough there's no need for a menu. Instead set null -> But set the KB shortcuts instead
+	Menu.setApplicationMenu(menuBar);
 }
 
-ipcMain.on("open.disabled", (e: Electron.Event, disabled: boolean) => {
-	menuManager.setApplicationIsBusy(disabled);
+ipcMain.on("applicationStatusChanged", (e: Electron.Event, applicationStatus: ApplicationStatus) => {
+	menuManager.setApplicationStatus(applicationStatus);
 });
-
-ipcMain.on("runAll.disabled", (e: Electron.Event, disabled: boolean) => {
-	menuManager.setApplicationIsBusy(disabled);
-});
-
-ipcMain.on("runVisible.disabled", (e: Electron.Event, disabled: boolean) => {
-	menuManager.setApplicationIsBusy(disabled);
-});
-
-ipcMain.on("stop.disabled", (e: Electron.Event, disabled: boolean) => {
-	menuManager.setApplicationIsBusy(disabled);
-});
-
-export function toggleDevTools() {
-	mainWindow.webContents.toggleDevTools();
-}
-
-export function openDirectory() {
-	mainWindow.webContents.send("request-openDirectory");
-}
 
 ipcMain.on("directoryOpened", (_e: Electron.Event, selectedDir: Directory) => {
 	// Persist MRU
@@ -135,22 +116,9 @@ ipcMain.on("directoryOpened", (_e: Electron.Event, selectedDir: Directory) => {
 	// Jumplist
 	//new JumplistBuilder().addMruItem(selectedDir);
 
-	// Menu
-	// const mru = new MruBuilder().getMru();
-	//new JumplistBuilder().addMruItem(selectedDir);
+	// Menu (needs to be fully re-initialised as we can't remove/rearrange the MRU items in-place)
+	Menu.setApplicationMenu(menuManager.initMainMenu());
 });
-
-export function runTests() {
-	mainWindow.webContents.send("request-runTests");
-}
-
-export function stopTests() {
-	mainWindow.webContents.send("request-stop");
-}
-
-export function onFilterMenuChanged(selectedFilter: TestStatus | null): void {
-	mainWindow.webContents.send("menu-filter-changed", selectedFilter);
-}
 
 ipcMain.on("setProgressBar", (_e: Electron.Event, progress: number, failed: boolean ) => {
 

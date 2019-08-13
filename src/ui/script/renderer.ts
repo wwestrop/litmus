@@ -299,6 +299,9 @@ function pushTestState() {
 
 	// Change menu in main process to reflect the currently selected filter
 	ipcRenderer.send("set-menu-filter-checkbox", LitmusDom.getStatusFilter());
+
+	// Enables/disables the corresponding UI that lives *OUTSIDE* of the window (menus and keyboard shortcuts)
+	ipcRenderer.send("applicationStatusChanged", applicationStatus);
 }
 
 function getSelectedGroupingKey(): string {
@@ -453,13 +456,6 @@ abstract class LitmusDom {
 		this.Toolbar.runAllButton.disabled = value;
 		this.Toolbar.runVisibleButton.disabled = value;
 		this.Toolbar.stopButton.disabled = !value;
-
-		// Enables/disables the corresponsing UI that lives *OUTSIDE* of the window (menus and keyboard shortcuts)
-		// TODO bundle all these calls into one single XPC cross-process-call?
-		ipcRenderer.send("open.disabled", value);
-		ipcRenderer.send("runAll.disabled", value);
-		ipcRenderer.send("runVisible.disabled", value);
-		ipcRenderer.send("stop.disabled", !value);
 	}
 
 	private static readonly placeholder: string ="Type to search…"; // TODO really should embed in component. CBA right now
