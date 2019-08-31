@@ -1,11 +1,9 @@
 import { ITestRunner } from '../logic/ITestRunner';
 import { LitmusContext } from '../types/LitmusContext';
-import { ITest, ISuite, IHook, IRunner } from 'mocha';
 import { TestCaseOutcome } from '../types/TestCaseOutcome';
 import { TestCase } from '../types/TestCase';
 import { Observer, Observable } from '../../../lib/LibObservable/Observable(T)';
 import { Directory } from '../../../lib/LibFs/Fs';
-//import "../../typings/mocha"; - works, but is emitted in the JS and breaks running under Node
 import { TestStatus } from '../types/TestStatus';
 import Module = require('module');
 import Mocha = require('mocha');
@@ -19,7 +17,7 @@ export class MochaTestRunner implements ITestRunner {
 
 	private readonly _fileLocatorStrategy: IFileLocatorStrategy = new KeywordSamplingFileLocatorStrategy(MochaKeywords);
 
-	private mochaRunner?: IRunner;
+	private mochaRunner?: Mocha.Runner;
 	private currentRun: Observable<LitmusRunnerEvent>;
 
 	constructor (private readonly _directory: Directory) {
@@ -41,13 +39,17 @@ export class MochaTestRunner implements ITestRunner {
 	private createObservable(observer: Observer<LitmusRunnerEvent>): void {
 		const mocha = new Mocha();
 
+		const that = this;
 		const jsFiles = this._directory.getFilesRecursive()
 			.filter(f => f.name.fullName.toLowerCase().endsWith(".js"))  // TODO exclude node_modules ??????? Which means we have to do directory separators
 			.filter(f => this._fileLocatorStrategy.isFileAcceptable(f)); // TODO cache files between runs and only re-check if it has changed
 		jsFiles.forEach(f => {
-			this.uncache(f.fullPath);
+			//this.uncache(f.fullPath);
+			that.uncache(f.fullPath);
 			mocha.addFile(f.fullPath);
 		});
+
+		//mocha.unloadFiles();
 
 		this.mochaRunner = mocha.run((_failures: number) => {
 			observer.next(new TestRunFinished());
@@ -60,16 +62,16 @@ export class MochaTestRunner implements ITestRunner {
 		// Copying the array every time will take up lots of space (and lots of garbage collection)
 		const allResults = new Array<TestCaseOutcome>();
 
-		this.mochaRunner.on('fail', (t: ITest | IHook) => {
+		this.mochaRunner.on('fail', (t: Mocha.Test | Mocha.Hook) => {
 			if (t.type === 'hook' && t.originalTitle === '"before each" hook') {
 				// TODO handle all the other types of hooks that could go wrong
 				// TODO add something to the error message so it's clear that a hook is failing, not the test itself
-				failDescendants(t.parent, t.err!);
+				failDescendants(t.parent!, t.error());
 			}
 		});
 
 		let isFirst = true;
-		this.mochaRunner.on('test', (t: ITest) => {
+		this.mochaRunner.on('test', (t: Mocha.Test) => {
 			if (isFirst) {
 				isFirst = false;
 
@@ -82,12 +84,11 @@ export class MochaTestRunner implements ITestRunner {
 			observer.next(new IndividualTestStarted(testcase));
 		});
 
-		this.mochaRunner.on('test end', (t: ITest) => {
+		this.mochaRunner.on('test end', (t: Mocha.Test) => {
 			pushResult(t);
 		});
 
-		const that = this;
-		function pushResult(t: ITest) {
+		function pushResult(t: Mocha.Test) {
 			const testDuration = t.duration || 0;
 			const testStatus = that.getTestStatus(t);
 
@@ -102,7 +103,7 @@ export class MochaTestRunner implements ITestRunner {
 			observer.next(event);
 		}
 
-		function buildTestCase(t: ITest): TestCase {
+		function buildTestCase(t: Mocha.Test): TestCase {
 			const testCase = new TestCase();
 			testCase.displayName = t.title;
 			const hierarchy = that.constructHierarchy(t);
@@ -116,13 +117,12 @@ export class MochaTestRunner implements ITestRunner {
 
 		/** On failure of a suite hook, pushes that failure down onto the child tests too, so that
 		 *  they show as failed on the UI (with the reason) */
-		function failDescendants(suite: ISuite, err: Error) {
+		function failDescendants(suite: Mocha.Suite, err: Error) {
 			for (const t of suite.tests) {
-				const updatedTest: ITest = {
-					...t,
-					state: "failed",
-					err: err,
-				};
+				const updatedTest = t;
+
+				t.state = "failed";
+				t.err = err;
 
 				pushResult(updatedTest);
 			}
@@ -145,15 +145,18 @@ export class MochaTestRunner implements ITestRunner {
 
 		// TODO depending where this is run - node, browser via requireJs, browser via parcelJs - these things are or are not available
 
-		if (require && require.cache) {
+		if ((Module as any)._cache) {
+			delete (Module as any)._cache[filepath];
+		}
+		else if (require && require.cache) {
 			delete require.cache[filepath];
 		}
 		else {
-			delete (Module as any)._cache[filepath];
+			throw "Cannot uncache previously require'd JS modules. Mocha will not show the latest test state unless the process restarts"
 		}
 	}
 
-	private getTestStatus(test: ITest): TestStatus {
+	private getTestStatus(test: Mocha.Test): TestStatus {
 		if (test.pending) {
 			return "Skipped";
 		}
@@ -169,7 +172,7 @@ export class MochaTestRunner implements ITestRunner {
 		}
 	}
 
-	private getFailureInfo(test: ITest): TestFailureInfo | null {
+	private getFailureInfo(test: Mocha.Test): TestFailureInfo | null {
 		const status = this.getTestStatus(test);
 
 		if (status === "Failed" && test.err) {
@@ -181,14 +184,14 @@ export class MochaTestRunner implements ITestRunner {
 		}
 	}
 
-	private constructHierarchy(test: ITest): string[] {
+	private constructHierarchy(test: Mocha.Test): string[] {
 		return this.constructHierarchy2(test.parent);
 	}
 
 	// TODO better name than "2 suffix".
 	// Won't support method overloading
 	// Could do type A | B - but they are interface types at compile-time only, then need some typeguard or whatnot
-	private constructHierarchy2(suite: Mocha.ISuite): string[] {
+	private constructHierarchy2(suite: Mocha.Suite | undefined): string[] {
 		if (!suite || !suite.parent) {
 			return [];
 		}
