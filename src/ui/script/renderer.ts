@@ -558,17 +558,17 @@ function stopTests() {
 }
 
 function openDirectory() {
-	remote.dialog.showOpenDialog(
+
+	const dir = remote.dialog.showOpenDialogSync(
 		currentWindow,
 		{
 			properties: [ "openDirectory" ]
-		},
-		(s: string[]) => {
-			if (s.length === 1) {
-				runTestsFromScratch(new Directory(s[0]));
-			}
 		}
 	);
+
+	if (dir && dir.length === 1) {
+		runTestsFromScratch(new Directory(dir[0]));
+	}
 }
 
 ipcRenderer.on("openSpecificDirectory", (_e: Electron.Event, selectedDir: Directory) => {

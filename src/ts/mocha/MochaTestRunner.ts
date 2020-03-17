@@ -57,6 +57,8 @@ export class MochaTestRunner implements ITestRunner {
 		});
 		const totalTests = this.mochaRunner.total;
 
+		//Mocha.unloadFiles();
+
 		// TODO use linked list
 		// Right now we're sharing the array between every `TestRun`, but really we want each to be independant
 		// Copying the array every time will take up lots of space (and lots of garbage collection)
@@ -66,7 +68,7 @@ export class MochaTestRunner implements ITestRunner {
 			if (t.type === 'hook' && t.originalTitle === '"before each" hook') {
 				// TODO handle all the other types of hooks that could go wrong
 				// TODO add something to the error message so it's clear that a hook is failing, not the test itself
-				failDescendants(t.parent!, t.error());
+				failDescendants(t.parent!, (t as any).err); // TODO the docs are wrong, `.error()` does not in fact get `err`
 			}
 		});
 

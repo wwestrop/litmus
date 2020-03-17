@@ -1,6 +1,6 @@
 import { IRunner, ITest } from "mocha";
 
-declare module "mocha" {
+declare namespace Mocha {
 	// export interface IRunner extends NodeJS.EventEmitter {
 	// 	total: number;
 	// }
@@ -26,14 +26,15 @@ declare module "mocha" {
 	// 	type: 'suite';
 	// }
 
-	// export interface IHook {
+	class Hook {
 	// 	//parent: ISuite;
 	// 	state: 'failed' | 'passed' | undefined;
 	// 	err?: Error;
-	// 	type: 'hook';            // the discriminating property
+		type: 'hook';            // the discriminating property
 
-	// 	originalTitle: '"before each" hook' | '"after each" hook' | '"before all" hook' | '"after all" hook';
-	// }
+		originalTitle: '"before each" hook' | '"after each" hook' | '"before all" hook' | '"after all" hook';
+		foobar: number;
+	}
 
 	// namespace Mocha {
 	// 	class Hook {
