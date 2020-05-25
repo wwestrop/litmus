@@ -59,11 +59,6 @@ export class MochaTestRunner implements ITestRunner {
 
 		//Mocha.unloadFiles();
 
-		// TODO use linked list
-		// Right now we're sharing the array between every `TestRun`, but really we want each to be independant
-		// Copying the array every time will take up lots of space (and lots of garbage collection)
-		const allResults = new Array<TestCaseOutcome>();
-
 		this.mochaRunner.on('fail', (t: Mocha.Test | Mocha.Hook) => {
 			if (t.type === 'hook' && t.originalTitle === '"before each" hook') {
 				// TODO handle all the other types of hooks that could go wrong
@@ -82,8 +77,7 @@ export class MochaTestRunner implements ITestRunner {
 				observer.next(event);
 			}
 
-			const testcase = buildTestCase(t);
-			observer.next(new IndividualTestStarted(testcase));
+			announceNewTest(t);
 		});
 
 		this.mochaRunner.on('test end', (t: Mocha.Test) => {
@@ -99,7 +93,6 @@ export class MochaTestRunner implements ITestRunner {
 			const failureInfo = that.getFailureInfo(t);
 
 			const thisOutcome = new TestCaseOutcome(testCase, testStatus, testDuration, failureInfo);
-			allResults.push(thisOutcome);
 
 			const event = new IndividualTestFinished(thisOutcome);
 			observer.next(event);
@@ -126,11 +119,18 @@ export class MochaTestRunner implements ITestRunner {
 				t.state = "failed";
 				t.err = err;
 
+				announceNewTest(updatedTest);
+
 				pushResult(updatedTest);
 			}
 			for (const s of suite.suites) {
 				failDescendants(s, err);
 			}
+		}
+
+		function announceNewTest(t: Mocha.Test): void {
+			const testcase = buildTestCase(t);
+			observer.next(new IndividualTestStarted(testcase));
 		}
 	}
 
